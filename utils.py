@@ -2,7 +2,6 @@ import exceptions
 
 
 def gen_new_board(rows=6, cols=7):
-    # return [[None]*cols]*rows
     return [[0] * cols for i in range(rows)]
 
 
@@ -68,59 +67,33 @@ def check_win(board, col_played):
         return True
 
     ###
-    # Check diagonal /
+    # Check diagonals
     ###
-    count = 0
-    # Check down-left
-    for i in range(1, 4):  # Only need to check the next 3 spots
-        try:
-            if board[last_move['r'] + i][last_move['c'] - i] == player:
-                count += 1
-                continue
-        except IndexError:
-            break
-        break
-
-    # Check up-right
-    for i in range(1, 4):  # Only need to check the next 3 spots
-        try:
-            if board[last_move['r'] - i][last_move['c'] + i] == player:
-                count += 1
-                continue
-        except IndexError:
-            break
-        break
-
-    # Check if win
-    if count >= 3:
-        return True
-
-    ###
-    # Check diagonal \
-    ###
-    count = 0
-    # Check up-left
-    for i in range(1, 4):  # Only need to check the next 3 spots
-        try:
-            if board[last_move['r'] - i][last_move['c'] - i] == player:
-                count += 1
-                continue
-        except IndexError:
-            break
-        break
-
-    # Check down-right
-    for i in range(1, 4):  # Only need to check the next 3 spots
-        try:
-            if board[last_move['r'] + i][last_move['c'] + i] == player:
-                count += 1
-                continue
-        except IndexError:
-            break
-        break
-
-    # Check if win
-    if count >= 3:
-        return True
+    angles = [
+        [  # Check /
+            (1, -1),  # down-left
+            (-1, 1),  # up-right
+        ],
+        [  # Check \
+            (-1, -1),  # up-left
+            (1, 1),  # down-right
+        ],
+    ]
+    for slash in angles:
+        count = 0
+        for slash_direction in slash:
+            for i in range(1, 4):  # Only need to check the next 3 spots
+                row = last_move['r'] + (i * slash_direction[0])
+                col = last_move['c'] + (i * slash_direction[1])
+                try:
+                    if board[row][col] == player:
+                        count += 1
+                        continue
+                except IndexError:
+                    break
+                break
+        # Check if win
+        if count >= 3:
+            return True
 
     return False
