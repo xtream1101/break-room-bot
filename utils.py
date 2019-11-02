@@ -32,20 +32,17 @@ def check_win(board, col_played):
     ###
     # Check horizontal
     ###
+    horizontal_check = [
+        range(col_played_idx - 1, -1, -1),  # Left
+        range(col_played_idx + 1, len(board[0])),  # Right
+    ]
     count = 0
-    # Check left
-    for col_idx in range(col_played_idx - 1, -1, -1):
-        if board[last_move['r']][col_idx] == player:
-            count += 1
-            continue
-        break
-
-    # Check right
-    for col_idx in range(col_played_idx + 1, len(board[0])):
-        if board[last_move['r']][col_idx] == player:
-            count += 1
-            continue
-        break
+    for direction in horizontal_check:
+        for col_idx in direction:
+            if board[last_move['r']][col_idx] == player:
+                count += 1
+                continue
+            break
 
     # Check if win
     if count >= 3:
