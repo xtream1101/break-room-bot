@@ -1,0 +1,4 @@
+
+
+class ColumnFull(Warning):
+    pass
