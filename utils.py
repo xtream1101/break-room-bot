@@ -19,6 +19,7 @@ def place_piece(board, column, player):
 
 
 def check_win(board, col_played):
+    # TODO: Return all wins with the cells they won in
     col_played_idx = col_played - 1
 
     for row_idx in range(len(board)):
