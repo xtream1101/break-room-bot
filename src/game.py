@@ -15,14 +15,16 @@ class Connect4:
 
         self.board = utils.gen_new_board()
 
-    def render_board(self):
+    def render_board_str(self):
         rendered_board = ''
         for row in self.board:
             for col in row:
                 rendered_board += f'{col}    '
             rendered_board += '\n'
-
         return rendered_board
+
+    def render_board(self, board_id):
+        utils.render_board(self.board, board_id)
 
     def toggle_player(self):
         self.turn = self.player1_id if self.turn == self.player2_id else self.player2_id

@@ -1,4 +1,6 @@
+import os.path
 import exceptions
+from PIL import Image
 
 
 def gen_new_board(rows=6, cols=7):
@@ -95,3 +97,25 @@ def check_win(board, col_played):
             return True
 
     return False
+
+
+def render_board(board, board_name):
+    piece_d = 50
+    piece_space = 10
+    board_img = Image.open("assets/board.png")
+    _, height = board_img.size
+    player1_piece = Image.open("assets/piece_red.png")
+    player2_piece = Image.open("assets/piece_yellow.png")
+    for row_idx, row in enumerate(board):
+        for col_idx, piece in enumerate(row):
+            if piece != 0:
+                x = (piece_d*col_idx)+((col_idx+1)*piece_space)
+                adjust_header = height-((50*6)+(10*(6+1)))
+                y = (piece_d*row_idx)+((row_idx+1)*piece_space) + adjust_header
+                player_piece = player1_piece if piece == 1 else player2_piece
+                board_img.paste(player_piece, (x, y), player_piece)
+
+    save_path = os.path.join('board_img_cache', board_name + '.png')
+    # board_img = board_img.convert('RGB')
+    # board_img.save(save_path, quality=10)
+    board_img.save(save_path)
