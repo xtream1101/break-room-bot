@@ -20,6 +20,16 @@ def place_piece(board, column, player):
     return board
 
 
+def check_tie(board):
+    """Must only check after check_win
+
+    Only have to see if there are any free spaces in the top row
+
+    Args:
+        board (list of list): Board as a list of lists
+    """
+    return not 0 in board[0]
+
 def check_win(board, col_played):
     # TODO: Return all wins with the cells they won in
     col_played_idx = col_played - 1
@@ -115,7 +125,9 @@ def render_board(board, board_name):
                 player_piece = player1_piece if piece == 1 else player2_piece
                 board_img.paste(player_piece, (x, y), player_piece)
 
-    save_path = os.path.join('board_img_cache', board_name + '.png')
+    if not os.path.exists(os.environ['RENDERED_IMAGES']):
+        os.makedirs(os.environ['RENDERED_IMAGES'])
+    save_path = os.path.join(os.environ['RENDERED_IMAGES'], board_name + '.png')
     # board_img = board_img.convert('RGB')
     # board_img.save(save_path, quality=10)
     board_img.save(save_path)

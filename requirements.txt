@@ -3,5 +3,4 @@ falcon
 gunicorn
 Pillow
 requests
-pickledb
 redis

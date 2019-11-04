@@ -44,3 +44,6 @@ class Connect4:
 
     def check_win(self, column):
         return utils.check_win(self.board, column)
+
+    def check_tie(self):
+        return utils.check_tie(self.board)
