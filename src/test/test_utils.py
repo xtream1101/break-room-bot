@@ -55,6 +55,22 @@ def test_place_piece__column_full():
         print(board)
 
 
+def test_check_win__bug_with_vertical():
+    """The last move was the far right of the win
+    Actual board that said player 1 won
+    Issue: the diagonal was wraping around the top and comming up on the bottom
+    """
+    board = [
+        [0, 1, 0, 0, 0, 0, 0],
+        [0, 2, 0, 0, 0, 0, 0],
+        [0, 1, 1, 0, 2, 2, 0],
+        [0, 1, 2, 2, 1, 1, 0],
+        [0, 1, 1, 1, 2, 2, 2],
+        [0, 2, 1, 2, 1, 2, 1],
+    ]
+    assert utils.check_win(board, 2) is False
+
+
 def test_check_win__horizontal_far_right():
     """The last move was the far right of the win
     """

@@ -95,6 +95,9 @@ def check_win(board, col_played):
             for i in range(1, 4):  # Only need to check the next 3 spots
                 row = last_move['r'] + (i * slash_direction[0])
                 col = last_move['c'] + (i * slash_direction[1])
+                if row < 0 or col < 0:
+                    # Prevent wraping around the board
+                    break
                 try:
                     if board[row][col] == player:
                         count += 1
@@ -102,6 +105,7 @@ def check_win(board, col_played):
                 except IndexError:
                     break
                 break
+
         # Check if win
         if count >= 3:
             return True
