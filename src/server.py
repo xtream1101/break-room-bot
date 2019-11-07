@@ -2,6 +2,7 @@ import os
 import uuid
 import time
 import json
+import boto3
 import redis
 import falcon
 import pickle
@@ -13,7 +14,6 @@ from game import Connect4
 
 r_connect4 = redis.Redis(host=os.getenv('REDIS_HOST', 'localhost'),
                          password=os.getenv('REDIS_PASSWORD', ''))
-BASE_URL = os.environ['BASE_URL']
 
 default_message_blocks = [
     {"type": "section", "text": {"type": "mrkdwn", "text": ""}},
@@ -47,8 +47,9 @@ class SlackConnect4:
 
         default_message_blocks[0]['text']['text'] = f"Connect4 game between <@{player1}> (red) & <@{player2}> (yellow)"
 
-        current_game.render_board(board_id)
-        default_message_blocks[1]['image_url'] = f"{BASE_URL}/slack/connect4/board/{board_id}.png"
+        board_url = current_game.render_board(board_id)
+        print(board_url)
+        default_message_blocks[1]['image_url'] = board_url
 
         default_message_blocks[0]['block_id'] = board_id
         default_message_blocks[-2]['text']['text'] = f"<@{current_game.turn}>'s Turn"
@@ -85,12 +86,12 @@ class SlackConnect4Button:
                 blocks[-2]['text']['text'] = f"<@{current_game.turn}>'s Turn"
 
             board_name = f"{board_id}-{time.time()}"
-            current_game.render_board(board_name, winning_moves=winning_moves)
+            board_url = current_game.render_board(board_name, winning_moves=winning_moves)
 
             # Better to create a new block because the one returned has data that breaks the api if returned
             old_game_board_img = blocks[1]['image_url'].split('/')[-1]
             new_image = default_message_blocks[1].copy()
-            new_image["image_url"] = f"{BASE_URL}/slack/connect4/board/{board_name}.png"
+            new_image["image_url"] = board_url
             blocks[1] = new_image
 
             # Fix formating of some messages
@@ -99,12 +100,15 @@ class SlackConnect4Button:
             r = requests.post(action_details['response_url'], json=action_details['message'])
 
             if r.json().get('ok') is True:
-                if redis.r_connect4(board_id)
+                if r_connect4.exists(board_id):
                     # only save game status if updating slack was successful and game is still playable
                     r_connect4.set(board_id, pickle.dumps(current_game))
                 try:
-                    os.remove(os.path.join(os.environ['RENDERED_IMAGES'], old_game_board_img))
-                except Exception:
+                    s3 = boto3.resource('s3', endpoint_url=os.getenv('S3_ENDPOINT', None))
+                    s3.Object(os.environ['RENDERED_IMAGES_BUCKET'], old_game_board_img.split('/')[-1]).delete()
+                    # os.remove(os.path.join(os.environ['RENDERED_IMAGES'], old_game_board_img))
+                except Exception as e:
+                    print(str(e))
                     pass
             else:
                 print(json.dumps(blocks))
@@ -120,4 +124,3 @@ api = falcon.API()
 api.add_route('/healthcheck', Healthcheck())
 api.add_route('/slack/connect4', SlackConnect4())
 api.add_route('/slack/connect4/button', SlackConnect4Button())
-api.add_static_route('/slack/connect4/board', os.environ['RENDERED_IMAGES'])

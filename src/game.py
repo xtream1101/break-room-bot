@@ -27,11 +27,10 @@ class Connect4:
         return rendered_board
 
     def render_board(self, board_id, winning_moves=None):
-        utils.render_board(self.board, board_id,
-                           theme=self.theme,
-                           latest_move=self.latest_move,
-                           winning_moves=winning_moves,
-                           )
+        return utils.render_board(self.board, board_id,
+                                  theme=self.theme,
+                                  latest_move=self.latest_move,
+                                  winning_moves=winning_moves)
 
     def toggle_player(self):
         self.turn = self.player1_id if self.turn == self.player2_id else self.player2_id

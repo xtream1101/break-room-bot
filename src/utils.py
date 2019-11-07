@@ -1,4 +1,6 @@
+import boto3
 import os.path
+import tempfile
 import exceptions
 from PIL import Image
 
@@ -168,7 +170,13 @@ def render_board(board, board_name, theme='classic', latest_move=(None, None), w
             won_y = get_overlay_y(move[0], move[1], won_img.size[1])
             board_img.paste(won_img, (won_x, won_y), won_img)
 
-    if not os.path.exists(os.environ['RENDERED_IMAGES']):
-        os.makedirs(os.environ['RENDERED_IMAGES'])
-    save_path = os.path.join(os.environ['RENDERED_IMAGES'], board_name + '.png')
-    board_img.save(save_path)
+    s3 = boto3.client('s3', endpoint_url=os.getenv('S3_ENDPOINT', None))
+    file_key = board_name + '.png'
+    with tempfile.NamedTemporaryFile() as tmp:
+        board_img.save(tmp.name, format='png')
+        s3.upload_file(tmp.name,
+                       os.environ['RENDERED_IMAGES_BUCKET'],
+                       file_key,
+                       ExtraArgs={'ContentType': 'image/png'})
+
+    return f"{os.getenv('S3_ENDPOINT', 'https://s3.amazonaws.com')}/{os.environ['RENDERED_IMAGES_BUCKET']}/{file_key}"
