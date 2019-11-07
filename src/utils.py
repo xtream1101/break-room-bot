@@ -11,13 +11,15 @@ def place_piece(board, column, player):
     column_idx = column - 1
     for i in range(1, len(board) + 1):
         # Find the next open spot to play
-        if board[-i][column_idx] == 0:
-            board[-i][column_idx] = player
+        row_idx = -i + len(board)
+        if board[row_idx][column_idx] == 0:
+            board[row_idx][column_idx] = player
+            latest_move = (row_idx, column_idx)
             # Player placed a piece, move is over
             break
     else:
         raise exceptions.ColumnFull
-    return board
+    return board, latest_move
 
 
 def check_tie(board):
@@ -28,9 +30,11 @@ def check_tie(board):
     Args:
         board (list of list): Board as a list of lists
     """
-    return not 0 in board[0]
+    return 0 not in board[0]
+
 
 def check_win(board, col_played):
+    wins = []
     # TODO: Return all wins with the cells they won in
     col_played_idx = col_played - 1
 
@@ -49,32 +53,32 @@ def check_win(board, col_played):
         range(col_played_idx - 1, -1, -1),  # Left
         range(col_played_idx + 1, len(board[0])),  # Right
     ]
-    count = 0
+    win = [(last_move['r'], last_move['c'])]
     for direction in horizontal_check:
         for col_idx in direction:
             if board[last_move['r']][col_idx] == player:
-                count += 1
+                win.append((last_move['r'], col_idx))
                 continue
             break
 
     # Check if win
-    if count >= 3:
-        return True
+    if len(win) >= 4:
+        wins.append(win)
 
     ###
     # Check vertical
     ###
-    count = 0
+    win = [(last_move['r'], last_move['c'])]
     # Only need to check down
     for row_idx in range(last_move['r'] + 1, len(board)):
         if board[row_idx][last_move['c']] == player:
-            count += 1
+            win.append((row_idx, last_move['c']))
             continue
         break
 
     # Check if win
-    if count >= 3:
-        return True
+    if len(win) >= 4:
+        wins.append(win)
 
     ###
     # Check diagonals
@@ -90,7 +94,7 @@ def check_win(board, col_played):
         ],
     ]
     for slash in angles:
-        count = 0
+        win = [(last_move['r'], last_move['c'])]
         for slash_direction in slash:
             for i in range(1, 4):  # Only need to check the next 3 spots
                 row = last_move['r'] + (i * slash_direction[0])
@@ -100,38 +104,71 @@ def check_win(board, col_played):
                     break
                 try:
                     if board[row][col] == player:
-                        count += 1
+                        win.append((row, col))
                         continue
                 except IndexError:
                     break
                 break
 
         # Check if win
-        if count >= 3:
-            return True
+        if len(win) >= 4:
+            wins.append(win)
 
-    return False
+    return wins
 
 
-def render_board(board, board_name):
+def render_board(board, board_name, theme='classic', latest_move=(None, None), winning_moves=None):
     piece_d = 50
-    piece_space = 10
-    board_img = Image.open("assets/board.png")
+    piece_space = 11
+    board_img = Image.open(f"assets/{theme}/board.png")
     _, height = board_img.size
-    player1_piece = Image.open("assets/piece_red.png")
-    player2_piece = Image.open("assets/piece_yellow.png")
+    player1_piece = Image.open(f"assets/{theme}/player1.png")
+    player2_piece = Image.open(f"assets/{theme}/player2.png")
+    lastest_move_img = Image.open(f"assets/{theme}/latest_move.png")
+    latest_move_w, latest_move_h = lastest_move_img.size
+
+    def get_x(row_idx, col_idx):
+        return (piece_d * col_idx) + ((col_idx + 1) * piece_space)
+
+    def get_y(row_idx, col_idx):
+        adjust_header = height - ((piece_d * 6) + (piece_space * (6 + 1)))
+        return (piece_d * row_idx) + ((row_idx + 1) * piece_space) + adjust_header
+
+    def get_overlay_x(row_idx, col_idx, piece_width):
+        return round(get_x(row_idx, col_idx) + ((piece_d / 2) - (piece_width / 2)))
+
+    def get_overlay_y(row_idx, col_idx, piece_height):
+        return round(get_y(row_idx, col_idx) + ((piece_d / 2) - (piece_height / 2)))
+
     for row_idx, row in enumerate(board):
         for col_idx, piece in enumerate(row):
             if piece != 0:
-                x = (piece_d*col_idx)+((col_idx+1)*piece_space)
-                adjust_header = height-((50*6)+(10*(6+1)))
-                y = (piece_d*row_idx)+((row_idx+1)*piece_space) + adjust_header
+                piece_x = get_x(row_idx, col_idx)
+                piece_y = get_y(row_idx, col_idx)
+                # Add players piece
                 player_piece = player1_piece if piece == 1 else player2_piece
-                board_img.paste(player_piece, (x, y), player_piece)
+                board_img.paste(player_piece, (piece_x, piece_y), player_piece)
+
+    if latest_move != (None, None) and not winning_moves:
+        # Add latest move if the game was not won
+        latest_move_x = get_overlay_x(latest_move[0], latest_move[1], latest_move_w)
+        latest_move_y = get_overlay_y(latest_move[0], latest_move[1], latest_move_h)
+        board_img.paste(lastest_move_img, (latest_move_x, latest_move_y), lastest_move_img)
+
+    if winning_moves:
+        # If the game is won, then mark each spot
+        won_img = Image.open(f"assets/{theme}/won.png")
+        # Get unique winning cells
+        unique_winning_moves = set()
+        for win in winning_moves:
+            for cell in win:
+                unique_winning_moves.add(cell)
+        for move in unique_winning_moves:
+            won_x = get_overlay_x(move[0], move[1], won_img.size[0])
+            won_y = get_overlay_y(move[0], move[1], won_img.size[1])
+            board_img.paste(won_img, (won_x, won_y), won_img)
 
     if not os.path.exists(os.environ['RENDERED_IMAGES']):
         os.makedirs(os.environ['RENDERED_IMAGES'])
     save_path = os.path.join(os.environ['RENDERED_IMAGES'], board_name + '.png')
-    # board_img = board_img.convert('RGB')
-    # board_img.save(save_path, quality=10)
     board_img.save(save_path)

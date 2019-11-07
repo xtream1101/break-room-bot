@@ -1,6 +1,7 @@
 import utils
 import pytest
 import exceptions
+from deepdiff import DeepDiff
 
 
 def test_gen_new_board():
@@ -20,13 +21,15 @@ def test_place_piece__first_move():
         [0, 0, 0, 0],
         [0, 0, 0, 0],
     ]
-    board = utils.place_piece(board, 2, 1)
+    board, latest_move = utils.place_piece(board, 2, 1)
     test_board = [
         [0, 0, 0, 0],
         [0, 0, 0, 0],
         [0, 1, 0, 0],
     ]
+    test_latest_move = (2, 1)
     assert board == test_board
+    assert latest_move == test_latest_move
 
 
 def test_place_piece__second_move_on_first():
@@ -35,13 +38,15 @@ def test_place_piece__second_move_on_first():
         [0, 0, 0, 0],
         [0, 1, 0, 0],
     ]
-    board = utils.place_piece(board, 2, 2)
+    board, latest_move = utils.place_piece(board, 2, 2)
     test_board = [
         [0, 0, 0, 0],
         [0, 2, 0, 0],
         [0, 1, 0, 0],
     ]
+    test_latest_move = (1, 1)
     assert board == test_board
+    assert latest_move == test_latest_move
 
 
 def test_place_piece__column_full():
@@ -51,8 +56,7 @@ def test_place_piece__column_full():
         [0, 1, 0, 0],
     ]
     with pytest.raises(exceptions.ColumnFull):
-        board = utils.place_piece(board, 2, 2)
-        print(board)
+        board, _ = utils.place_piece(board, 2, 2)
 
 
 def test_check_win__bug_with_vertical():
@@ -68,7 +72,7 @@ def test_check_win__bug_with_vertical():
         [0, 1, 1, 1, 2, 2, 2],
         [0, 2, 1, 2, 1, 2, 1],
     ]
-    assert utils.check_win(board, 2) is False
+    assert utils.check_win(board, 2) == []
 
 
 def test_check_win__horizontal_far_right():
@@ -82,7 +86,10 @@ def test_check_win__horizontal_far_right():
         [0, 0, 2, 0, 0, 2, 0],
         [0, 0, 2, 1, 1, 1, 1],
     ]
-    assert utils.check_win(board, 7) is True
+    diff = DeepDiff(utils.check_win(board, 7),
+                    [[(5, 3), (5, 4), (5, 5), (5, 6)]],
+                    ignore_order=True)
+    assert diff == {}
 
 
 def test_check_win__horizontal_far_left():
@@ -96,7 +103,10 @@ def test_check_win__horizontal_far_left():
         [0, 0, 2, 0, 0, 2, 0],
         [0, 0, 2, 1, 1, 1, 1],
     ]
-    assert utils.check_win(board, 4) is True
+    diff = DeepDiff(utils.check_win(board, 4),
+                    [[(5, 3), (5, 4), (5, 5), (5, 6)]],
+                    ignore_order=True)
+    assert diff == {}
 
 
 def test_check_win__horizontal_middle():
@@ -110,7 +120,10 @@ def test_check_win__horizontal_middle():
         [0, 0, 2, 0, 0, 2, 0],
         [0, 0, 2, 1, 1, 1, 1],
     ]
-    assert utils.check_win(board, 5) is True
+    diff = DeepDiff(utils.check_win(board, 5),
+                    [[(5, 3), (5, 4), (5, 5), (5, 6)]],
+                    ignore_order=True)
+    assert diff == {}
 
 
 def test_check_win__vertical():
@@ -122,7 +135,10 @@ def test_check_win__vertical():
         [0, 1, 0, 2, 0, 0, 0],
         [0, 1, 2, 2, 0, 0, 0],
     ]
-    assert utils.check_win(board, 2) is True
+    diff = DeepDiff(utils.check_win(board, 2),
+                    [[(5, 1), (4, 1), (3, 1), (2, 1)]],
+                    ignore_order=True)
+    assert diff == {}
 
 
 def test_check_win__lose_count_reset():
@@ -136,7 +152,7 @@ def test_check_win__lose_count_reset():
         [1, 1, 0, 2, 0, 0, 0],
         [2, 1, 2, 2, 2, 0, 0],
     ]
-    assert utils.check_win(board, 2) is False
+    assert utils.check_win(board, 2) == []
 
 
 def test_check_win__diagonal_fwd_slash_far_right():
@@ -148,7 +164,10 @@ def test_check_win__diagonal_fwd_slash_far_right():
         [0, 0, 1, 1, 2, 0, 0],
         [0, 1, 2, 2, 2, 0, 0],
     ]
-    assert utils.check_win(board, 5) is True
+    diff = DeepDiff(utils.check_win(board, 5),
+                    [[(5, 1), (4, 2), (3, 3), (2, 4)]],
+                    ignore_order=True)
+    assert diff == {}
 
 
 def test_check_win__diagonal_fwd_slash_far_left():
@@ -160,7 +179,10 @@ def test_check_win__diagonal_fwd_slash_far_left():
         [0, 0, 1, 1, 2, 0, 0],
         [0, 1, 2, 2, 2, 0, 0],
     ]
-    assert utils.check_win(board, 2) is True
+    diff = DeepDiff(utils.check_win(board, 2),
+                    [[(5, 1), (4, 2), (3, 3), (2, 4)]],
+                    ignore_order=True)
+    assert diff == {}
 
 
 def test_check_win__diagonal_fwd_slash_middle():
@@ -172,7 +194,10 @@ def test_check_win__diagonal_fwd_slash_middle():
         [0, 0, 1, 1, 2, 0, 0],
         [0, 1, 2, 2, 2, 0, 0],
     ]
-    assert utils.check_win(board, 4) is True
+    diff = DeepDiff(utils.check_win(board, 4),
+                    [[(5, 1), (4, 2), (3, 3), (2, 4)]],
+                    ignore_order=True)
+    assert diff == {}
 
 
 def test_check_win__diagonal_back_slash_far_right():
@@ -184,7 +209,10 @@ def test_check_win__diagonal_back_slash_far_right():
         [0, 2, 2, 1, 1, 0, 0],
         [0, 1, 2, 1, 2, 0, 0],
     ]
-    assert utils.check_win(board, 5) is True
+    diff = DeepDiff(utils.check_win(board, 5),
+                    [[(1, 1), (2, 2), (3, 3), (4, 4)]],
+                    ignore_order=True)
+    assert diff == {}
 
 
 def test_check_win__diagonal_back_slash_far_left():
@@ -196,7 +224,10 @@ def test_check_win__diagonal_back_slash_far_left():
         [0, 2, 2, 1, 1, 0, 0],
         [0, 1, 2, 1, 2, 0, 0],
     ]
-    assert utils.check_win(board, 2) is True
+    diff = DeepDiff(utils.check_win(board, 2),
+                    [[(1, 1), (2, 2), (3, 3), (4, 4)]],
+                    ignore_order=True)
+    assert diff == {}
 
 
 def test_check_win__diagonal_back_slash_middle():
@@ -208,4 +239,7 @@ def test_check_win__diagonal_back_slash_middle():
         [0, 2, 2, 1, 1, 0, 0],
         [0, 1, 2, 1, 2, 0, 0],
     ]
-    assert utils.check_win(board, 3) is True
+    diff = DeepDiff(utils.check_win(board, 3),
+                    [[(1, 1), (2, 2), (3, 3), (4, 4)]],
+                    ignore_order=True)
+    assert diff == {}

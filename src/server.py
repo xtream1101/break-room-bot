@@ -8,7 +8,6 @@ import pickle
 import requests
 import exceptions
 import urllib.parse
-from pprint import pprint
 from game import Connect4
 
 
@@ -17,7 +16,7 @@ r_connect4 = redis.Redis(host=os.getenv('REDIS_HOST', 'localhost'),
 BASE_URL = os.environ['BASE_URL']
 
 default_message_blocks = [
-    {"type": "section","text": {"type": "mrkdwn", "text": ""}},
+    {"type": "section", "text": {"type": "mrkdwn", "text": ""}},
     {"type": "image", "image_url": "", "alt_text": "Game Board"},
     {
         "type": "actions",
@@ -31,7 +30,7 @@ default_message_blocks = [
             {"type": "button", "text": {"type": "plain_text", "text": "7"}, "value": "7"}
         ]
     },
-    {"type": "section","text": {"type": "mrkdwn", "text": ""}},
+    {"type": "section", "text": {"type": "mrkdwn", "text": ""}},
     {"type": "context", "elements": [{"type": "mrkdwn", "text": "This slackbot was created by Eddy Hintze"}]}
 ]
 
@@ -71,7 +70,8 @@ class SlackConnect4Button:
         except exceptions.NotYourTurn:
             pass
         else:
-            if current_game.check_win(column):
+            winning_moves = current_game.check_win(column)
+            if winning_moves:
                 # The current player won, disable buttons and make it known
                 blocks.pop(2)
                 blocks[-2]['text']['text'] = f"<@{current_game.turn}> WON!!!"
@@ -83,7 +83,7 @@ class SlackConnect4Button:
                 blocks[-2]['text']['text'] = f"<@{current_game.turn}>'s Turn"
 
             board_name = f"{board_id}-{time.time()}"
-            current_game.render_board(board_name)
+            current_game.render_board(board_name, winning_moves=winning_moves)
 
             # Better to create a new block because the one returned has data that breaks the api if returned
             old_game_board_img = blocks[1]['image_url'].split('/')[-1]
@@ -101,7 +101,7 @@ class SlackConnect4Button:
                 r_connect4.set(board_id, pickle.dumps(current_game))
                 try:
                     os.remove(os.path.join(os.environ['RENDERED_IMAGES'], old_game_board_img))
-                except:
+                except Exception:
                     pass
             else:
                 print(json.dumps(blocks))
