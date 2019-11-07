@@ -75,9 +75,11 @@ class SlackConnect4Button:
                 # The current player won, disable buttons and make it known
                 blocks.pop(2)
                 blocks[-2]['text']['text'] = f"<@{current_game.turn}> WON!!!"
+                r_connect4.delete(board_id)
             elif current_game.check_tie():
                 blocks.pop(2)
                 blocks[-2]['text']['text'] = f"It's a Tie!"
+                r_connect4.delete(board_id)
             else:
                 current_game.toggle_player()
                 blocks[-2]['text']['text'] = f"<@{current_game.turn}>'s Turn"
@@ -97,8 +99,9 @@ class SlackConnect4Button:
             r = requests.post(action_details['response_url'], json=action_details['message'])
 
             if r.json().get('ok') is True:
-                # only save game status if updating slack was successful
-                r_connect4.set(board_id, pickle.dumps(current_game))
+                if redis.r_connect4(board_id)
+                    # only save game status if updating slack was successful and game is still playable
+                    r_connect4.set(board_id, pickle.dumps(current_game))
                 try:
                     os.remove(os.path.join(os.environ['RENDERED_IMAGES'], old_game_board_img))
                 except Exception:
