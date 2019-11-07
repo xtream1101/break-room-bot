@@ -8,7 +8,7 @@ Run server for slacks webhook `gunicorn server:api -w 2 --reload`
 - `REDIS_HOST`
 - `REDIS_PASSWORD`
 - `RENDERED_IMAGES`
-- `BASE_URL`s
+- `BASE_URL`
 
 
 ### Slack bot settings
