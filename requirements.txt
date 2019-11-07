@@ -4,3 +4,4 @@ gunicorn
 Pillow
 requests
 redis
+boto3
