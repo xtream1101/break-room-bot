@@ -12,11 +12,14 @@ import urllib.parse
 from game import Connect4
 
 
+BASE_URL = os.environ['BASE_URL']
 r_connect4 = redis.Redis(host=os.getenv('REDIS_HOST', 'localhost'),
                          password=os.getenv('REDIS_PASSWORD', ''))
 
 default_message_blocks = [
     {"type": "section", "text": {"type": "mrkdwn", "text": ""}},
+    {"type": "image", "title": {"type": "plain_text", "text": "Player1"}, "image_url": "", "alt_text": "Player1"},
+    {"type": "image", "title": {"type": "plain_text", "text": "Player2"}, "image_url": "", "alt_text": "Player2"},
     {"type": "image", "image_url": "", "alt_text": "Game Board"},
     {
         "type": "actions",
@@ -42,14 +45,18 @@ class SlackConnect4:
         player1 = data['user_id'][0]
         player2 = data['text'][0].split('|')[0].split('@')[-1]  # TODO: validate this is a user (at least the format)
         # TODO: Make sure you are not playing with yourself
-        current_game = Connect4(player1, player2)
+        theme = 'classic'
+        current_game = Connect4(player1, player2, theme=theme)
         r_connect4.set(board_id, pickle.dumps(current_game))
 
-        default_message_blocks[0]['text']['text'] = f"Connect4 game between <@{player1}> (red) & <@{player2}> (yellow)"
+        header_message = f"Connect4 game between Player 1: <@{player1}> & Player 2: <@{player2}>"
+        default_message_blocks[0]['text']['text'] = header_message
+
+        default_message_blocks[1]['image_url'] = f"{BASE_URL}/slack/connect4/assets/{theme}/player1.png"
+        default_message_blocks[2]['image_url'] = f"{BASE_URL}/slack/connect4/assets/{theme}/player2.png"
 
         board_url = current_game.render_board(board_id)
-        print(board_url)
-        default_message_blocks[1]['image_url'] = board_url
+        default_message_blocks[3]['image_url'] = board_url
 
         default_message_blocks[0]['block_id'] = board_id
         default_message_blocks[-2]['text']['text'] = f"<@{current_game.turn}>'s Turn"
@@ -74,11 +81,11 @@ class SlackConnect4Button:
             winning_moves = current_game.check_win(column)
             if winning_moves:
                 # The current player won, disable buttons and make it known
-                blocks.pop(2)
+                blocks.pop(-3)
                 blocks[-2]['text']['text'] = f"<@{current_game.turn}> WON!!!"
                 r_connect4.delete(board_id)
             elif current_game.check_tie():
-                blocks.pop(2)
+                blocks.pop(-3)
                 blocks[-2]['text']['text'] = f"It's a Tie!"
                 r_connect4.delete(board_id)
             else:
@@ -89,16 +96,25 @@ class SlackConnect4Button:
             board_url = current_game.render_board(board_name, winning_moves=winning_moves)
 
             # Better to create a new block because the one returned has data that breaks the api if returned
-            old_game_board_img = blocks[1]['image_url'].split('/')[-1]
-            new_image = default_message_blocks[1].copy()
+            old_game_board_img = blocks[3]['image_url'].split('/')[-1]
+            new_image = default_message_blocks[3].copy()
             new_image["image_url"] = board_url
-            blocks[1] = new_image
+            blocks[3] = new_image
 
             # Fix formating of some messages
             blocks[0]['text']['text'] = blocks[0]['text']['text'].replace('+', ' ')
             blocks[-1]['elements'][0]['text'] = blocks[-1]['elements'][0]['text'].replace('+', ' ')
-            r = requests.post(action_details['response_url'], json=action_details['message'])
+            # Clean up image fields auto added by slack that cannot be posted when updating the message
+            del blocks[1]['image_width']
+            del blocks[1]['image_height']
+            del blocks[1]['image_bytes']
+            del blocks[1]['fallback']
+            del blocks[2]['image_width']
+            del blocks[2]['image_height']
+            del blocks[2]['image_bytes']
+            del blocks[2]['fallback']
 
+            r = requests.post(action_details['response_url'], json=action_details['message'])
             if r.json().get('ok') is True:
                 if r_connect4.exists(board_id):
                     # only save game status if updating slack was successful and game is still playable
@@ -106,9 +122,7 @@ class SlackConnect4Button:
                 try:
                     s3 = boto3.resource('s3', endpoint_url=os.getenv('S3_ENDPOINT', None))
                     s3.Object(os.environ['RENDERED_IMAGES_BUCKET'], old_game_board_img.split('/')[-1]).delete()
-                    # os.remove(os.path.join(os.environ['RENDERED_IMAGES'], old_game_board_img))
-                except Exception as e:
-                    print(str(e))
+                except Exception:
                     pass
             else:
                 print(json.dumps(blocks))
@@ -124,3 +138,5 @@ api = falcon.API()
 api.add_route('/healthcheck', Healthcheck())
 api.add_route('/slack/connect4', SlackConnect4())
 api.add_route('/slack/connect4/button', SlackConnect4Button())
+asset_path = os.path.join(os.path.dirname(os.path.abspath(__file__)), 'assets')
+api.add_static_route('/slack/connect4/assets', asset_path)

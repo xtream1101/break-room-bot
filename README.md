@@ -7,6 +7,7 @@ Run server for slacks webhook `gunicorn server:api -w 2 --reload`
 ### ENV vars to set
 - `REDIS_HOST`
 - `REDIS_PASSWORD`
+- `BASE_URL`
 - `RENDERED_IMAGES_BUCKET`
 - `AWS_ACCESS_KEY_ID`
 - `AWS_SECRET_ACCESS_KEY`
