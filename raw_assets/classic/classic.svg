@@ -18,7 +18,7 @@
    id="svg8"
    inkscape:version="0.92.2 5c3e80d, 2017-08-06"
    sodipodi:docname="classic.svg"
-   inkscape:export-filename="/home/eddy/Documents/Development/Personal/connect4-slack/src/assets/classic/player2.png"
+   inkscape:export-filename="/Users/ehintze/Development/Personal/connect4-slack/src/assets/classic/board.png"
    inkscape:export-xdpi="96"
    inkscape:export-ydpi="96">
   <defs
@@ -663,16 +663,16 @@
      inkscape:pageopacity="0.0"
      inkscape:pageshadow="2"
      inkscape:zoom="1.979899"
-     inkscape:cx="154.98404"
-     inkscape:cy="296.26351"
+     inkscape:cx="188.82415"
+     inkscape:cy="195.24825"
      inkscape:document-units="px"
-     inkscape:current-layer="layer6"
+     inkscape:current-layer="layer9"
      showgrid="false"
      units="px"
      inkscape:window-width="1317"
      inkscape:window-height="901"
-     inkscape:window-x="1863"
-     inkscape:window-y="276"
+     inkscape:window-x="2337"
+     inkscape:window-y="83"
      inkscape:window-maximized="0"
      inkscape:pagecheckerboard="true" />
   <metadata
@@ -692,7 +692,7 @@
      inkscape:groupmode="layer"
      id="layer1"
      transform="translate(0,-187.19794)"
-     style="display:inline"
+     style="display:none"
      sodipodi:insensitive="true">
     <path
        style="fill:#0000ff;stroke-width:0.99999994"
@@ -705,11 +705,12 @@
      inkscape:groupmode="layer"
      id="layer6"
      inkscape:label="numbers"
-     style="display:inline"
-     transform="translate(0,10.054166)">
+     style="display:none"
+     transform="translate(0,10.054166)"
+     sodipodi:insensitive="true">
     <text
        xml:space="preserve"
-       style="font-style:normal;font-weight:normal;font-size:10.58333397px;line-height:1.25;font-family:sans-serif;letter-spacing:0px;word-spacing:0px;fill:#4587f5;fill-opacity:1;stroke:none;stroke-width:0.26458335;paint-order:fill markers stroke;"
+       style="font-style:normal;font-weight:normal;font-size:10.58333397px;line-height:1.25;font-family:sans-serif;letter-spacing:0px;word-spacing:0px;fill:#4587f5;fill-opacity:1;stroke:none;stroke-width:0.26458335;paint-order:fill markers stroke"
        x="6.2366085"
        y="-1.0583314"
        id="text1197"><tspan
@@ -717,10 +718,10 @@
          id="tspan1195"
          x="6.2366085"
          y="-1.0583314"
-         style="stroke-width:0.26458335;paint-order:fill markers stroke;fill:#4587f5;fill-opacity:1;">1</tspan></text>
+         style="fill:#4587f5;fill-opacity:1;stroke-width:0.26458335;paint-order:fill markers stroke">1</tspan></text>
     <text
        xml:space="preserve"
-       style="font-style:normal;font-weight:normal;font-size:10.58333397px;line-height:1.25;font-family:sans-serif;letter-spacing:0px;word-spacing:0px;fill:#4587f5;fill-opacity:1;stroke:none;stroke-width:0.26458335;"
+       style="font-style:normal;font-weight:normal;font-size:10.58333397px;line-height:1.25;font-family:sans-serif;letter-spacing:0px;word-spacing:0px;fill:#4587f5;fill-opacity:1;stroke:none;stroke-width:0.26458335"
        x="22.111609"
        y="-1.0583314"
        id="text1201"><tspan
@@ -728,10 +729,10 @@
          id="tspan1199"
          x="22.111609"
          y="-1.0583314"
-         style="stroke-width:0.26458335;fill:#4587f5;fill-opacity:1;">2</tspan></text>
+         style="fill:#4587f5;fill-opacity:1;stroke-width:0.26458335">2</tspan></text>
     <text
        xml:space="preserve"
-       style="font-style:normal;font-weight:normal;font-size:10.58333397px;line-height:1.25;font-family:sans-serif;letter-spacing:0px;word-spacing:0px;fill:#4587f5;fill-opacity:1;stroke:none;stroke-width:0.26458335;"
+       style="font-style:normal;font-weight:normal;font-size:10.58333397px;line-height:1.25;font-family:sans-serif;letter-spacing:0px;word-spacing:0px;fill:#4587f5;fill-opacity:1;stroke:none;stroke-width:0.26458335"
        x="38.515778"
        y="-1.2081937"
        id="text1205"><tspan
@@ -739,10 +740,10 @@
          id="tspan1203"
          x="38.515778"
          y="-1.2081937"
-         style="stroke-width:0.26458335;fill:#4587f5;fill-opacity:1;">3</tspan></text>
+         style="fill:#4587f5;fill-opacity:1;stroke-width:0.26458335">3</tspan></text>
     <text
        xml:space="preserve"
-       style="font-style:normal;font-weight:normal;font-size:10.58333397px;line-height:1.25;font-family:sans-serif;letter-spacing:0px;word-spacing:0px;fill:#4587f5;fill-opacity:1;stroke:none;stroke-width:0.26458335;"
+       style="font-style:normal;font-weight:normal;font-size:10.58333397px;line-height:1.25;font-family:sans-serif;letter-spacing:0px;word-spacing:0px;fill:#4587f5;fill-opacity:1;stroke:none;stroke-width:0.26458335"
        x="54.012798"
        y="-1.0583314"
        id="text1209"><tspan
@@ -750,10 +751,10 @@
          id="tspan1207"
          x="54.012798"
          y="-1.0583314"
-         style="stroke-width:0.26458335;fill:#4587f5;fill-opacity:1;">4</tspan></text>
+         style="fill:#4587f5;fill-opacity:1;stroke-width:0.26458335">4</tspan></text>
     <text
        xml:space="preserve"
-       style="font-style:normal;font-weight:normal;font-size:10.58333397px;line-height:1.25;font-family:sans-serif;letter-spacing:0px;word-spacing:0px;fill:#4587f5;fill-opacity:1;stroke:none;stroke-width:0.26458335;"
+       style="font-style:normal;font-weight:normal;font-size:10.58333397px;line-height:1.25;font-family:sans-serif;letter-spacing:0px;word-spacing:0px;fill:#4587f5;fill-opacity:1;stroke:none;stroke-width:0.26458335"
        x="70.530357"
        y="-1.2081937"
        id="text1213"><tspan
@@ -761,10 +762,10 @@
          id="tspan1211"
          x="70.530357"
          y="-1.2081937"
-         style="stroke-width:0.26458335;fill:#4587f5;fill-opacity:1;">5</tspan></text>
+         style="fill:#4587f5;fill-opacity:1;stroke-width:0.26458335">5</tspan></text>
     <text
        xml:space="preserve"
-       style="font-style:normal;font-weight:normal;font-size:10.58333397px;line-height:1.25;font-family:sans-serif;letter-spacing:0px;word-spacing:0px;fill:#4587f5;fill-opacity:1;stroke:none;stroke-width:0.26458335;"
+       style="font-style:normal;font-weight:normal;font-size:10.58333397px;line-height:1.25;font-family:sans-serif;letter-spacing:0px;word-spacing:0px;fill:#4587f5;fill-opacity:1;stroke:none;stroke-width:0.26458335"
        x="86.783333"
        y="-1.2081937"
        id="text1217"><tspan
@@ -772,10 +773,10 @@
          id="tspan1215"
          x="86.783333"
          y="-1.2081937"
-         style="stroke-width:0.26458335;fill:#4587f5;fill-opacity:1;">6</tspan></text>
+         style="fill:#4587f5;fill-opacity:1;stroke-width:0.26458335">6</tspan></text>
     <text
        xml:space="preserve"
-       style="font-style:normal;font-weight:normal;font-size:10.58333397px;line-height:1.25;font-family:sans-serif;letter-spacing:0px;word-spacing:0px;fill:#4587f5;fill-opacity:1;stroke:none;stroke-width:0.26458335;"
+       style="font-style:normal;font-weight:normal;font-size:10.58333397px;line-height:1.25;font-family:sans-serif;letter-spacing:0px;word-spacing:0px;fill:#4587f5;fill-opacity:1;stroke:none;stroke-width:0.26458335"
        x="103.1497"
        y="-1.0583314"
        id="text1221"><tspan
@@ -783,13 +784,13 @@
          id="tspan1219"
          x="103.1497"
          y="-1.0583314"
-         style="stroke-width:0.26458335;fill:#4587f5;fill-opacity:1;">7</tspan></text>
+         style="fill:#4587f5;fill-opacity:1;stroke-width:0.26458335">7</tspan></text>
   </g>
   <g
      inkscape:groupmode="layer"
      id="layer4"
      inkscape:label="player1"
-     style="display:inline"
+     style="display:none"
      sodipodi:insensitive="true"
      transform="translate(0,10.054166)">
     <circle
@@ -803,7 +804,7 @@
      inkscape:groupmode="layer"
      id="layer5"
      inkscape:label="player2"
-     style="display:inline"
+     style="display:none"
      sodipodi:insensitive="true"
      transform="translate(0,10.054166)">
     <circle
@@ -817,7 +818,7 @@
      inkscape:groupmode="layer"
      id="layer8"
      inkscape:label="latest_move"
-     style="display:inline"
+     style="display:none"
      sodipodi:insensitive="true"
      transform="translate(0,10.054166)">
     <ellipse
@@ -836,16 +837,25 @@
      id="layer9"
      inkscape:label="won"
      style="display:inline"
-     sodipodi:insensitive="true"
-     transform="translate(0,10.054166)">
-    <circle
-       style="opacity:1;fill:#00bb36;fill-opacity:1;stroke:none;stroke-width:0.60152876;stroke-miterlimit:4;stroke-dasharray:none;stroke-opacity:1;paint-order:markers fill stroke"
-       id="path5813"
-       cx="25.664583"
-       cy="90.222916"
-       r="3.3072917"
-       inkscape:export-filename="/home/eddy/Documents/Development/Personal/connect4-slack/src/assets/classic/won.png"
-       inkscape:export-xdpi="96"
-       inkscape:export-ydpi="96" />
+     transform="translate(0,10.054166)"
+     sodipodi:insensitive="true">
+    <path
+       sodipodi:type="star"
+       style="fill:#4587f5;fill-opacity:1;stroke-width:0.26458329"
+       id="path949"
+       sodipodi:sides="5"
+       sodipodi:cx="6.9490061"
+       sodipodi:cy="91.239044"
+       sodipodi:r1="5.5325427"
+       sodipodi:r2="2.7662714"
+       sodipodi:arg1="0.92246434"
+       sodipodi:arg2="1.5507829"
+       inkscape:flatsided="false"
+       inkscape:rounded="0"
+       inkscape:randomized="0"
+       d="m 10.289875,95.648991 -3.28551,-1.644229 -3.217082,1.774385 0.5484764,-3.6328 -2.6816741,-2.511311 3.6244866,-0.600965 1.5597163,-3.326462 1.6915795,3.261384 3.6456313,0.455445 -2.5790326,2.61661 z"
+       inkscape:transform-center-x="0.025811362"
+       inkscape:transform-center-y="-0.3906407"
+       transform="matrix(0.75441365,0,0,0.78811186,4.1103869,18.177797)" />
   </g>
 </svg>
