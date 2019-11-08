@@ -46,29 +46,41 @@ class SlackConnect4:
     def on_post(self, req, resp):
         data = urllib.parse.parse_qs(req.stream.read().decode('utf-8'))
         board_id = str(uuid.uuid4())
-        # TODO: make a call to slack to get the display names, not the actual user names
-        player1_id = data['user_id'][0]
-        player1_name = data['user_name'][0]
-        # TODO: validate this is a user (at least the format)
-        player2_id, player2_name = data['text'][0].split('@')[-1].split('>')[0].split('|')
-        # TODO: Allow you to play with yourself, current does not switch player correctly
-        theme = 'classic'
-        current_game = Connect4(player1_id, player2_id, theme=theme)
-        r_connect4.set(board_id, pickle.dumps(current_game))
+        try:
+            # TODO: Add command option to see list of themes and sample pre-rendered boards
+            # TODO: make a call to slack to get the display names, not the actual user names
+            player1_id = data['user_id'][0]
+            player1_name = data['user_name'][0]
+            # TODO: validate this is a user (at least the format)
+            player2_id, player2_name = data['text'][0].split('@')[-1].split('>')[0].split('|')
+            # TODO: Allow you to play with yourself, current does not switch player correctly
+            theme = 'classic'
+            if len(data['text'][0].split(' ')) == 2:
+                theme = data['text'][0].split(' ')[-1]
 
-        header_message = f"<@{player1_id}> & <@{player2_id}>"
-        default_message_blocks[0]['text']['text'] = header_message
+            current_game = Connect4(player1_id, player2_id, theme=theme)
+            r_connect4.set(board_id, pickle.dumps(current_game))
 
-        player_banner_url = current_game.render_player_banner(player1_name, player2_name, board_id)
-        default_message_blocks[1]['image_url'] = player_banner_url
+            header_message = f"<@{player1_id}> & <@{player2_id}>"
+            default_message_blocks[0]['text']['text'] = header_message
 
-        board_url = current_game.render_board(board_id)
-        default_message_blocks[2]['image_url'] = board_url
+            player_banner_url = current_game.render_player_banner(player1_name, player2_name, board_id)
+            default_message_blocks[1]['image_url'] = player_banner_url
 
-        default_message_blocks[0]['block_id'] = board_id
-        default_message_blocks[-2]['text']['text'] = f"<@{current_game.turn}>'s Turn"
+            board_url = current_game.render_board(board_id)
+            default_message_blocks[2]['image_url'] = board_url
 
-        resp.media = {'response_type': 'in_channel', 'blocks': default_message_blocks}
+            default_message_blocks[0]['block_id'] = board_id
+            default_message_blocks[-2]['text']['text'] = f"<@{current_game.turn}>'s Turn"
+        except Exception as e:
+            print(str(e))
+            resp.media = {'text': '''*Usage:*
+\t`/connect4 @user ThemeName`
+\t\t`@user` is who to play with
+\t\t`ThemeName` is for a custom theme, if not passed in "Classic" will be used
+            '''}
+        else:
+            resp.media = {'response_type': 'in_channel', 'blocks': default_message_blocks}
 
 
 class SlackConnect4Button:
