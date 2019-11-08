@@ -18,8 +18,7 @@ r_connect4 = redis.Redis(host=os.getenv('REDIS_HOST', 'localhost'),
 
 default_message_blocks = [
     {"type": "section", "text": {"type": "mrkdwn", "text": ""}},
-    {"type": "image", "title": {"type": "plain_text", "text": "Player1"}, "image_url": "", "alt_text": "Player1"},
-    {"type": "image", "title": {"type": "plain_text", "text": "Player2"}, "image_url": "", "alt_text": "Player2"},
+    {"type": "image", "title": {"type": "plain_text", "text": "Player Banner"}, "image_url": "", "alt_text": "Player Banner"},
     {"type": "image", "image_url": "", "alt_text": "Game Board"},
     {
         "type": "actions",
@@ -42,21 +41,24 @@ class SlackConnect4:
     def on_post(self, req, resp):
         data = urllib.parse.parse_qs(req.stream.read().decode('utf-8'))
         board_id = str(uuid.uuid4())
-        player1 = data['user_id'][0]
-        player2 = data['text'][0].split('|')[0].split('@')[-1]  # TODO: validate this is a user (at least the format)
-        # TODO: Make sure you are not playing with yourself
+        # TODO: make a call to slack to get the display names, not the actual user names
+        player1_id = data['user_id'][0]
+        player1_name = data['user_name'][0]
+        # TODO: validate this is a user (at least the format)
+        player2_id, player2_name = data['text'][0].split('@')[-1].split('>')[0].split('|')
+        # TODO: Allow you to play with yourself, current does not switch player correctly
         theme = 'classic'
-        current_game = Connect4(player1, player2, theme=theme)
+        current_game = Connect4(player1_id, player2_id, theme=theme)
         r_connect4.set(board_id, pickle.dumps(current_game))
 
-        header_message = f"Connect4 game between Player 1: <@{player1}> & Player 2: <@{player2}>"
+        header_message = f"<@{player1_id}> & <@{player2_id}>"
         default_message_blocks[0]['text']['text'] = header_message
 
-        default_message_blocks[1]['image_url'] = f"{BASE_URL}/slack/connect4/assets/{theme}/player1.png"
-        default_message_blocks[2]['image_url'] = f"{BASE_URL}/slack/connect4/assets/{theme}/player2.png"
+        player_banner_url = current_game.render_player_banner(player1_name, player2_name, board_id)
+        default_message_blocks[1]['image_url'] = player_banner_url
 
         board_url = current_game.render_board(board_id)
-        default_message_blocks[3]['image_url'] = board_url
+        default_message_blocks[2]['image_url'] = board_url
 
         default_message_blocks[0]['block_id'] = board_id
         default_message_blocks[-2]['text']['text'] = f"<@{current_game.turn}>'s Turn"
@@ -96,10 +98,10 @@ class SlackConnect4Button:
             board_url = current_game.render_board(board_name, winning_moves=winning_moves)
 
             # Better to create a new block because the one returned has data that breaks the api if returned
-            old_game_board_img = blocks[3]['image_url'].split('/')[-1]
-            new_image = default_message_blocks[3].copy()
+            old_game_board_img = blocks[2]['image_url'].split('/')[-1]
+            new_image = default_message_blocks[2].copy()
             new_image["image_url"] = board_url
-            blocks[3] = new_image
+            blocks[2] = new_image
 
             # Fix formating of some messages
             blocks[0]['text']['text'] = blocks[0]['text']['text'].replace('+', ' ')

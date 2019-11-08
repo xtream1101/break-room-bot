@@ -32,6 +32,12 @@ class Connect4:
                                   latest_move=self.latest_move,
                                   winning_moves=winning_moves)
 
+    def render_player_banner(self, player1_name, player2_name, board_id):
+        return utils.render_player_banner(player1_name,
+                                          player2_name,
+                                          board_id,
+                                          theme=self.theme)
+
     def toggle_player(self):
         self.turn = self.player1_id if self.turn == self.player2_id else self.player2_id
 

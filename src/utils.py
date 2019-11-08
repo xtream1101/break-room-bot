@@ -3,6 +3,8 @@ import os.path
 import tempfile
 import exceptions
 from PIL import Image
+from PIL import ImageFont
+from PIL import ImageDraw
 
 
 def gen_new_board(rows=6, cols=7):
@@ -117,6 +119,30 @@ def check_win(board, col_played):
             wins.append(win)
 
     return wins
+
+
+def render_player_banner(player1_name, player2_name, board_name, theme='classic'):
+    template = Image.open("assets/player_banner.png")
+    player1_piece = Image.open(f"assets/{theme}/player1.png")
+    player2_piece = Image.open(f"assets/{theme}/player2.png")
+
+    template.paste(player1_piece, (2, 2), player1_piece)
+    template.paste(player2_piece, (219, 2), player2_piece)
+    draw = ImageDraw.Draw(template)
+    font = ImageFont.truetype("Lato-Bold.ttf", 16)
+    draw.text((58, 20), player1_name[:20], (66, 135, 245), font=font)
+    draw.text((278, 20), player2_name[:20], (66, 135, 245), font=font)
+
+    s3 = boto3.client('s3', endpoint_url=os.getenv('S3_ENDPOINT', None))
+    file_key = board_name + '_player_banner.png'
+    with tempfile.NamedTemporaryFile() as tmp:
+        template.save(tmp.name, format='png')
+        s3.upload_file(tmp.name,
+                       os.environ['RENDERED_IMAGES_BUCKET'],
+                       file_key,
+                       ExtraArgs={'ContentType': 'image/png'})
+
+    return f"{os.getenv('S3_ENDPOINT', 'https://s3.amazonaws.com')}/{os.environ['RENDERED_IMAGES_BUCKET']}/{file_key}"
 
 
 def render_board(board, board_name, theme='classic', latest_move=(None, None), winning_moves=None):
