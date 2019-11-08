@@ -18,7 +18,9 @@ r_connect4 = redis.Redis(host=os.getenv('REDIS_HOST', 'localhost'),
 
 default_message_blocks = [
     {"type": "section", "text": {"type": "mrkdwn", "text": ""}},
-    {"type": "image", "title": {"type": "plain_text", "text": "Player Banner"}, "image_url": "", "alt_text": "Player Banner"},
+    {"type": "image",
+     "title": {"type": "plain_text", "text": "Player Banner"},
+     "image_url": "", "alt_text": "Player Banner"},
     {"type": "image", "image_url": "", "alt_text": "Game Board"},
     {
         "type": "actions",
@@ -33,7 +35,10 @@ default_message_blocks = [
         ]
     },
     {"type": "section", "text": {"type": "mrkdwn", "text": ""}},
-    {"type": "context", "elements": [{"type": "mrkdwn", "text": "This slackbot was created by Eddy Hintze"}]}
+    {"type": "context", "elements": [
+        {"type": "mrkdwn", "text": ("Created by Eddy Hintze.\n"
+                                    "Game code can be found here https://github.com/xtream1101/connect4-slack")}
+     ]}
 ]
 
 
