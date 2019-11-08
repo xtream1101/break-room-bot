@@ -111,10 +111,6 @@ class SlackConnect4Button:
             del blocks[1]['image_height']
             del blocks[1]['image_bytes']
             del blocks[1]['fallback']
-            del blocks[2]['image_width']
-            del blocks[2]['image_height']
-            del blocks[2]['image_bytes']
-            del blocks[2]['fallback']
 
             r = requests.post(action_details['response_url'], json=action_details['message'])
             if r.json().get('ok') is True:
