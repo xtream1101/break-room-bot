@@ -8,4 +8,4 @@ RUN pip3 install -r requirements.txt
 
 COPY src/ /src/
 
-CMD ["gunicorn", "-b", "0.0.0.0:80", "-w", "16", "server:api"]
+CMD ["gunicorn", "-b", "0.0.0.0:8088", "-w", "16", "server:api"]
