@@ -1,3 +1,4 @@
+import os
 import boto3
 import os.path
 import tempfile
@@ -10,6 +11,33 @@ from PIL import ImageDraw
 PIECE_D = 50
 PIECE_SPACE = 11
 
+
+def get_theme_list():
+    return list(os.walk('assets'))[0][1]
+
+
+def get_sample_theme_blocks():
+    samples = []
+    for theme in get_theme_list():
+        try:
+            with open(os.path.join('assets', theme, 'about.txt'), 'r')  as f:
+                theme_about_text = f.read().strip()
+        except FileNotFoundError:
+            theme_about_text = ''
+
+        samples.append({
+            "type": "section",
+            "text": {
+                "type": "mrkdwn",
+                "text": f"Theme: *{theme}*\n{theme_about_text[:200]}"
+            },
+            "accessory": {
+                "type": "image",
+                "image_url": f"{os.getenv('S3_ENDPOINT', 'https://s3.amazonaws.com')}/{os.environ['RENDERED_IMAGES_BUCKET']}/sample-{theme}.png",
+                "alt_text": theme
+            }
+        })
+    return samples
 
 def gen_new_board(rows=6, cols=7):
     return [[0] * cols for i in range(rows)]
@@ -168,7 +196,11 @@ def get_overlay_y(row_idx, col_idx, piece_height, board_height):
 
 def add_lastest_move_overlay(board_img, latest_move=(None, None), theme='classic'):
     if latest_move != (None, None):
-        lastest_move_img = Image.open(f"assets/{theme}/latest_move.png")
+        try:
+            lastest_move_img = Image.open(f"assets/{theme}/latest_move.png")
+        except FileNotFoundError:
+            return board_img
+
         latest_move_w, latest_move_h = lastest_move_img.size
 
         # Add latest move if the game was not won
@@ -181,11 +213,14 @@ def add_lastest_move_overlay(board_img, latest_move=(None, None), theme='classic
 
 
 def add_won_overlay(board_img, winning_moves, theme='classic'):
-    # Add latest move if the game was not won
+    # If the game is won, then mark each spot
     if winning_moves:
+        try:
+            won_img = Image.open(f"assets/{theme}/won.png")
+        except FileNotFoundError:
+            return board_img
+
         _, board_height = board_img.size
-        # If the game is won, then mark each spot
-        won_img = Image.open(f"assets/{theme}/won.png")
         # Get unique winning cells
         unique_winning_moves = set()
         for win in winning_moves:

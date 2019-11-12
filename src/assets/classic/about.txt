@@ -1,0 +1,1 @@
+This is the default classic connect 4 theme created by Eddy Hintze

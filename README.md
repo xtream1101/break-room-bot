@@ -27,6 +27,7 @@ Enable and add the Request Url to be `https://YOUR_DOMAIN/slack/connect4/button`
 ### Assets
 
 In the folder `src/assets`, create a theme folder, i.e. `src/assets/classic` Inside that folder you will need to put the following assets for your theme. All assets must be png format to allow for transparency.  
+If you add a file called `about.txt` into your theme folder, then that text will render next to your theme when a user uses the command `/connect4 themes`. Only the first 200 characters will be displayed.  
 
 The theme files that created the assets can be stored in the directory `raw_assets/`.  
 

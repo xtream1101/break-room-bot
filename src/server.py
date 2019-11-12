@@ -4,6 +4,7 @@ import time
 import json
 import boto3
 import redis
+import utils
 import falcon
 import pickle
 import requests
@@ -47,7 +48,10 @@ class SlackConnect4:
         data = urllib.parse.parse_qs(req.stream.read().decode('utf-8'))
         board_id = str(uuid.uuid4())
         try:
-            # TODO: Add command option to see list of themes and sample pre-rendered boards
+            if data['text'][0].strip().lower() == 'themes':
+                resp.media = {'response_type': 'in_channel', 'blocks': utils.get_sample_theme_blocks()}
+                return
+
             # TODO: make a call to slack to get the display names, not the actual user names
             player1_id = data['user_id'][0]
             player1_name = data['user_name'][0]
@@ -57,6 +61,10 @@ class SlackConnect4:
             theme = 'classic'
             if len(data['text'][0].split(' ')) == 2:
                 theme = data['text'][0].split(' ')[-1]
+
+            if theme not in utils.get_theme_list():
+                resp.media = {'text': f'The theme *{theme}* is not found'}
+                return
 
             current_game = Connect4(player1_id, player2_id, theme=theme)
             r_connect4.set(board_id, pickle.dumps(current_game))
@@ -75,6 +83,9 @@ class SlackConnect4:
         except Exception as e:
             print(str(e))
             resp.media = {'text': '''*Usage:*
+To list Themes:
+\t `/connect4 themes`
+Start a game:
 \t`/connect4 @user ThemeName`
 \t\t`@user` is who to play with
 \t\t`ThemeName` is for a custom theme, if not passed in "Classic" will be used
