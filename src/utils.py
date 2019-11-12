@@ -7,6 +7,10 @@ from PIL import ImageFont
 from PIL import ImageDraw
 
 
+PIECE_D = 50
+PIECE_SPACE = 11
+
+
 def gen_new_board(rows=6, cols=7):
     return [[0] * cols for i in range(rows)]
 
@@ -145,45 +149,41 @@ def render_player_banner(player1_name, player2_name, board_name, theme='classic'
     return f"{os.getenv('S3_ENDPOINT', 'https://s3.amazonaws.com')}/{os.environ['RENDERED_IMAGES_BUCKET']}/{file_key}"
 
 
-def render_board(board, board_name, theme='classic', latest_move=(None, None), winning_moves=None):
-    piece_d = 50
-    piece_space = 11
-    board_img = Image.open(f"assets/{theme}/board.png")
-    _, height = board_img.size
-    player1_piece = Image.open(f"assets/{theme}/player1.png")
-    player2_piece = Image.open(f"assets/{theme}/player2.png")
-    lastest_move_img = Image.open(f"assets/{theme}/latest_move.png")
-    latest_move_w, latest_move_h = lastest_move_img.size
+def get_piece_x(row_idx, col_idx):
+    return (PIECE_D * col_idx) + ((col_idx + 1) * PIECE_SPACE)
 
-    def get_x(row_idx, col_idx):
-        return (piece_d * col_idx) + ((col_idx + 1) * piece_space)
 
-    def get_y(row_idx, col_idx):
-        adjust_header = height - ((piece_d * 6) + (piece_space * (6 + 1)))
-        return (piece_d * row_idx) + ((row_idx + 1) * piece_space) + adjust_header
+def get_piece_y(row_idx, col_idx, board_height):
+    adjust_header = board_height - ((PIECE_D * 6) + (PIECE_SPACE * (6 + 1)))
+    return (PIECE_D * row_idx) + ((row_idx + 1) * PIECE_SPACE) + adjust_header
 
-    def get_overlay_x(row_idx, col_idx, piece_width):
-        return round(get_x(row_idx, col_idx) + ((piece_d / 2) - (piece_width / 2)))
 
-    def get_overlay_y(row_idx, col_idx, piece_height):
-        return round(get_y(row_idx, col_idx) + ((piece_d / 2) - (piece_height / 2)))
+def get_overlay_x(row_idx, col_idx, piece_width):
+    return round(get_piece_x(row_idx, col_idx) + ((PIECE_D / 2) - (piece_width / 2)))
 
-    for row_idx, row in enumerate(board):
-        for col_idx, piece in enumerate(row):
-            if piece != 0:
-                piece_x = get_x(row_idx, col_idx)
-                piece_y = get_y(row_idx, col_idx)
-                # Add players piece
-                player_piece = player1_piece if piece == 1 else player2_piece
-                board_img.paste(player_piece, (piece_x, piece_y), player_piece)
 
-    if latest_move != (None, None) and not winning_moves:
+def get_overlay_y(row_idx, col_idx, piece_height, board_height):
+    return round(get_piece_y(row_idx, col_idx, board_height) + ((PIECE_D / 2) - (piece_height / 2)))
+
+
+def add_lastest_move_overlay(board_img, latest_move=(None, None), theme='classic'):
+    if latest_move != (None, None):
+        lastest_move_img = Image.open(f"assets/{theme}/latest_move.png")
+        latest_move_w, latest_move_h = lastest_move_img.size
+
         # Add latest move if the game was not won
+        _, board_height = board_img.size
         latest_move_x = get_overlay_x(latest_move[0], latest_move[1], latest_move_w)
-        latest_move_y = get_overlay_y(latest_move[0], latest_move[1], latest_move_h)
+        latest_move_y = get_overlay_y(latest_move[0], latest_move[1], latest_move_h, board_height)
         board_img.paste(lastest_move_img, (latest_move_x, latest_move_y), lastest_move_img)
 
+    return board_img
+
+
+def add_won_overlay(board_img, winning_moves, theme='classic'):
+    # Add latest move if the game was not won
     if winning_moves:
+        _, board_height = board_img.size
         # If the game is won, then mark each spot
         won_img = Image.open(f"assets/{theme}/won.png")
         # Get unique winning cells
@@ -191,13 +191,36 @@ def render_board(board, board_name, theme='classic', latest_move=(None, None), w
         for win in winning_moves:
             for cell in win:
                 unique_winning_moves.add(cell)
+
         for move in unique_winning_moves:
             won_x = get_overlay_x(move[0], move[1], won_img.size[0])
-            won_y = get_overlay_y(move[0], move[1], won_img.size[1])
+            won_y = get_overlay_y(move[0], move[1], won_img.size[1], board_height)
             board_img.paste(won_img, (won_x, won_y), won_img)
 
+    return board_img
+
+
+def render_board(board, theme='classic'):
+    board_img = Image.open(f"assets/{theme}/board.png")
+    _, board_height = board_img.size
+    player1_piece = Image.open(f"assets/{theme}/player1.png")
+    player2_piece = Image.open(f"assets/{theme}/player2.png")
+
+    for row_idx, row in enumerate(board):
+        for col_idx, piece in enumerate(row):
+            if piece != 0:
+                piece_x = get_piece_x(row_idx, col_idx)
+                piece_y = get_piece_y(row_idx, col_idx, board_height)
+                # Add players piece
+                player_piece = player1_piece if piece == 1 else player2_piece
+                board_img.paste(player_piece, (piece_x, piece_y), player_piece)
+
+    return board_img
+
+
+def save_render(board_img, board_name):
+    file_key = f"{board_name}.png"
     s3 = boto3.client('s3', endpoint_url=os.getenv('S3_ENDPOINT', None))
-    file_key = board_name + '.png'
     with tempfile.NamedTemporaryFile() as tmp:
         board_img.save(tmp.name, format='png')
         s3.upload_file(tmp.name,

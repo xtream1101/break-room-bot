@@ -19,6 +19,7 @@ class Connect4:
         self.board = utils.gen_new_board()
 
     def render_board_str(self):
+        # Not used in prod, but useful for testing in terminal
         rendered_board = ''
         for row in self.board:
             for col in row:
@@ -26,11 +27,14 @@ class Connect4:
             rendered_board += '\n'
         return rendered_board
 
-    def render_board(self, board_id, winning_moves=None):
-        return utils.render_board(self.board, board_id,
-                                  theme=self.theme,
-                                  latest_move=self.latest_move,
-                                  winning_moves=winning_moves)
+    def render_board(self, board_name, winning_moves=None):
+        board_img = utils.render_board(self.board, theme=self.theme)
+        # Only render the last more OR the winning pieces
+        if winning_moves is None:
+            board_img = utils.add_lastest_move_overlay(board_img, self.latest_move, theme=self.theme)
+        else:
+            board_img = utils.add_won_overlay(board_img, winning_moves, theme=self.theme)
+        return utils.save_render(board_img, board_name)
 
     def render_player_banner(self, player1_name, player2_name, board_id):
         return utils.render_player_banner(player1_name,
