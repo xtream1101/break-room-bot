@@ -1,6 +1,7 @@
 import os
 import boto3
 import os.path
+import datetime
 import tempfile
 import exceptions
 from PIL import Image
@@ -10,6 +11,10 @@ from PIL import ImageDraw
 
 PIECE_D = 50
 PIECE_SPACE = 11
+
+
+def get_ts():
+    return datetime.datetime.utcnow().isoformat() + 'Z'
 
 
 def get_theme_list():
@@ -38,6 +43,7 @@ def get_sample_theme_blocks():
             }
         })
     return samples
+
 
 def gen_new_board(rows=6, cols=7):
     return [[0] * cols for i in range(rows)]

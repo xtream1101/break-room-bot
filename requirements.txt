@@ -5,3 +5,5 @@ Pillow
 requests
 redis
 boto3
+imageio
+pygifsicle
