@@ -74,7 +74,7 @@ class Connect4:
         board_name = f"{self.game_id}-{time.time()}"
         board_img = utils.render_board(self.board, theme=self.theme)
         # Only render the last more OR the winning pieces
-        if self.winning_moves is None:
+        if not self.winning_moves:
             board_img = utils.add_lastest_move_overlay(board_img, self.latest_move, theme=self.theme)
         else:
             board_img = utils.add_won_overlay(board_img, self.winning_moves, theme=self.theme)
