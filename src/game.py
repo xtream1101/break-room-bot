@@ -124,14 +124,11 @@ class Connect4:
             }
         )
 
-        if game_end is not None:
-            recap_url = self._game_over()
-        else:
-            recap_url = None
+        if game_end is None:
             # Only toggle the player if game has not ended
             self.toggle_player()
 
-        return board_url, game_end, recap_url
+        return board_url, game_end
 
     def _generate_recap(self, moves):
         s3 = boto3.client('s3', endpoint_url=os.getenv('S3_ENDPOINT', None))
@@ -151,19 +148,18 @@ class Connect4:
                            file_key,
                            ExtraArgs={'ContentType': 'image/gif'})
 
-        return f"{os.getenv('S3_ENDPOINT', 'https://s3.amazonaws.com')}/{os.environ['RENDERED_IMAGES_BUCKET']}/{file_key}"
+        return f"{os.getenv('S3_ENDPOINT', 'https://s3.amazonaws.com')}/{os.environ['RENDERED_IMAGES_BUCKET']}/{file_key}"  # noqa: E501
 
-    def _game_over(self):
+    def game_over(self):
         self.game_history['end_time'] = datetime.datetime.utcnow().isoformat() + 'Z'
 
         recap_url = self._generate_recap(self.game_history['moves'])
 
         self.game_history['recap_url'] = recap_url
         s3 = boto3.client('s3', endpoint_url=os.getenv('S3_ENDPOINT', None))
-        with tempfile.NamedTemporaryFile() as tmp:
-            s3.put_object(Body=json.dumps(self.game_history).encode('utf-8'),
-                          Bucket=os.environ['GAME_HISTORY_BUCKET'],
-                          Key=f"{self.game_id}-history.json",
-                          ContentType='application/json')
+        s3.put_object(Body=json.dumps(self.game_history).encode('utf-8'),
+                      Bucket=os.environ['GAME_HISTORY_BUCKET'],
+                      Key=f"{self.game_id}-history.json",
+                      ContentType='application/json')
 
         return recap_url

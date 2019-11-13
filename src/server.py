@@ -1,13 +1,11 @@
 import os
-import uuid
-import time
 import json
-import boto3
 import redis
 import utils
 import falcon
 import pickle
 import requests
+import threading
 import exceptions
 import urllib.parse
 from game import Connect4
@@ -39,7 +37,7 @@ default_message_blocks = [
     {"type": "context", "elements": [
         {"type": "mrkdwn", "text": ("Created by Eddy Hintze.\n"
                                     "Game code can be found here https://github.com/xtream1101/connect4-slack")}
-     ]}
+    ]}
 ]
 
 
@@ -101,23 +99,26 @@ class SlackConnect4Button:
         current_game = pickle.loads(r_connect4.get(game_id))
         try:
             column, player = current_game.parse_column_and_player(action_details)
-            board_url, game_state, recap_url = current_game.place_piece(column, player)
+            board_url, game_state = current_game.place_piece(column, player)
         except (exceptions.NotYourTurn, exceptions.ColumnFull):
             pass
         else:
             if game_state is not None:
                 # Game is over
+                # Generate recap in thread to post when ready
+                t = threading.Thread(target=generate_recap, args=(current_game, action_details))
+                t.daemon = True
+                t.start()
+
                 blocks.pop(-3)  # Remove buttons
                 r_connect4.delete(game_id)  # Clear from cache
 
             msg_state = {'win': f"<@{current_game.current_player}> WON!!!",
                          'tie': f"It's a Tie!",
                          None: f"<@{current_game.current_player}>'s Turn",
-                                  }
+                         }
             blocks[-2]['text']['text'] = msg_state.get(game_state, 'The game got into an invalid state.')
-            print("Gif url:", recap_url)
             # Better to create a new block because the one returned has data that breaks the api if returned
-            old_game_board_img = blocks[2]['image_url'].split('/')[-1]
             new_image = default_message_blocks[2].copy()
             new_image["image_url"] = board_url
             blocks[2] = new_image
@@ -144,6 +145,27 @@ class SlackConnect4Button:
 class Healthcheck:
     def on_get(self, req, resp):
         resp.media = {'success': True}
+
+
+def generate_recap(game, action_details):
+    recap_url = game.game_over()
+    r = requests.post(
+        'https://slack.com/api/chat.postMessage',
+        headers={
+            'Content-Type': 'application/json',
+            'Authorization': f"Bearer {os.environ['SLACKBOT_TOKEN']}",
+
+        },
+        json={
+            'text': 'Game Recap',
+            'blocks': [{"type": "image",
+                        "image_url": recap_url,
+                        "alt_text": "Game Recap"}],
+            'channel': action_details['channel']['id'],
+            'thread_ts': action_details['message']['ts'],
+        })
+    if r.json().get('ok') is False:
+        print("Failed sending the recap", r.text)
 
 
 api = falcon.API()

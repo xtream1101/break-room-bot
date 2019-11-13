@@ -12,9 +12,16 @@ Run server for slacks webhook `gunicorn server:api -w 2 --reload`
 - `GAME_HISTORY_BUCKET`
 - `AWS_ACCESS_KEY_ID`
 - `AWS_SECRET_ACCESS_KEY`
+- `SLACKBOT_TOKEN`
 - `S3_ENDPOINT` - optional, will default to aws s3
 
+
 ### Slack bot settings
+
+#### Permissions
+Needs:
+- `chat:write:bot`
+- `commands`
 
 #### Slash Command
 Set the Request Url to be `https://YOUR_DOMAIN/slack/connect4`.  

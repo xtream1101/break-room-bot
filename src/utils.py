@@ -25,7 +25,7 @@ def get_sample_theme_blocks():
     samples = []
     for theme in get_theme_list():
         try:
-            with open(os.path.join('assets', theme, 'about.txt'), 'r')  as f:
+            with open(os.path.join('assets', theme, 'about.txt'), 'r') as f:
                 theme_about_text = f.read().strip()
         except FileNotFoundError:
             theme_about_text = ''
@@ -38,7 +38,7 @@ def get_sample_theme_blocks():
             },
             "accessory": {
                 "type": "image",
-                "image_url": f"{os.getenv('S3_ENDPOINT', 'https://s3.amazonaws.com')}/{os.environ['RENDERED_IMAGES_BUCKET']}/sample-{theme}.png",
+                "image_url": f"{os.getenv('S3_ENDPOINT', 'https://s3.amazonaws.com')}/{os.environ['RENDERED_IMAGES_BUCKET']}/sample-{theme}.png",  # noqa:E501
                 "alt_text": theme
             }
         })
