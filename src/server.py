@@ -46,7 +46,6 @@ default_message_blocks = [
 class SlackConnect4:
     def on_post(self, req, resp):
         data = urllib.parse.parse_qs(req.stream.read().decode('utf-8'))
-        board_id = str(uuid.uuid4())
         try:
             if data['text'][0].strip().lower() == 'themes':
                 resp.media = {'response_type': 'in_channel', 'blocks': utils.get_sample_theme_blocks()}
@@ -67,18 +66,18 @@ class SlackConnect4:
                 return
 
             current_game = Connect4(player1_id, player2_id, theme=theme)
-            r_connect4.set(board_id, pickle.dumps(current_game))
+            r_connect4.set(current_game.game_id, pickle.dumps(current_game))
 
             header_message = f"<@{player1_id}> & <@{player2_id}>"
             default_message_blocks[0]['text']['text'] = header_message
 
-            player_banner_url = current_game.render_player_banner(player1_name, player2_name, board_id)
+            player_banner_url = current_game.render_player_banner(player1_name, player2_name)
             default_message_blocks[1]['image_url'] = player_banner_url
 
-            board_url = current_game.render_board(board_id)
+            board_url = current_game.render_board(current_game.game_id)
             default_message_blocks[2]['image_url'] = board_url
 
-            default_message_blocks[0]['block_id'] = board_id
+            default_message_blocks[0]['block_id'] = current_game.game_id
             default_message_blocks[-2]['text']['text'] = f"<@{current_game.turn}>'s Turn"
         except Exception as e:
             print(str(e))
@@ -100,30 +99,26 @@ class SlackConnect4Button:
         action_details = json.loads(data.replace('payload=', ''))
         blocks = action_details['message']['blocks']
 
-        board_id = blocks[0]['block_id']
-        current_game = pickle.loads(r_connect4.get(board_id))
+        game_id = blocks[0]['block_id']
+        current_game = pickle.loads(r_connect4.get(game_id))
         try:
-            column, player = current_game.get_column_and_player(action_details)
-            current_game.place_piece(column, player)
-        except exceptions.NotYourTurn:
+            column, player = current_game.parse_column_and_player(action_details)
+            board, game_state = current_game.place_piece(column, player)
+        except (exceptions.NotYourTurn, exceptions.ColumnFull):
             pass
         else:
-            winning_moves = current_game.check_win(column)
-            if winning_moves:
-                # The current player won, disable buttons and make it known
-                blocks.pop(-3)
-                blocks[-2]['text']['text'] = f"<@{current_game.turn}> WON!!!"
-                r_connect4.delete(board_id)
-            elif current_game.check_tie():
-                blocks.pop(-3)
-                blocks[-2]['text']['text'] = f"It's a Tie!"
-                r_connect4.delete(board_id)
-            else:
-                current_game.toggle_player()
-                blocks[-2]['text']['text'] = f"<@{current_game.turn}>'s Turn"
+            if game_state is not None:
+                # Game is over
+                blocks.pop(-3)  # Remove buttons
+                r_connect4.delete(board_id)  # Clear from cache
 
-            board_name = f"{board_id}-{time.time()}"
-            board_url = current_game.render_board(board_name, winning_moves=winning_moves)
+            msg_state = {'win': f"<@{current_game.turn}> WON!!!",
+                         'tie': f"It's a Tie!",
+                         None: f"<@{current_game.turn}>'s Turn",
+                                  }
+            blocks[-2]['text']['text'] = msg_state.get(game_state, 'The game got into an invalid state.')
+
+            board_url = current_game.render_board(f"{current_game.game_id}-{time.time()}")
 
             # Better to create a new block because the one returned has data that breaks the api if returned
             old_game_board_img = blocks[2]['image_url'].split('/')[-1]
@@ -142,9 +137,9 @@ class SlackConnect4Button:
 
             r = requests.post(action_details['response_url'], json=action_details['message'])
             if r.json().get('ok') is True:
-                if r_connect4.exists(board_id):
+                if r_connect4.exists(game_id):
                     # only save game status if updating slack was successful and game is still playable
-                    r_connect4.set(board_id, pickle.dumps(current_game))
+                    r_connect4.set(game_id, pickle.dumps(current_game))
                 try:
                     s3 = boto3.resource('s3', endpoint_url=os.getenv('S3_ENDPOINT', None))
                     s3.Object(os.environ['RENDERED_IMAGES_BUCKET'], old_game_board_img.split('/')[-1]).delete()
