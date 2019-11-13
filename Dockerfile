@@ -7,7 +7,7 @@ WORKDIR /src
 RUN pip3 install -r requirements.txt
 
 # Needed for generating gifs
-RUN apt-get install gifsicle
+RUN apt-get update && apt-get install gifsicle
 
 COPY src/ /src/
 
