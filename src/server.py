@@ -1,5 +1,6 @@
 import os
 import json
+import boto3
 import redis
 import utils
 import falcon
@@ -39,6 +40,32 @@ default_message_blocks = [
                                     "Game code can be found here https://github.com/xtream1101/connect4-slack")}
     ]}
 ]
+
+
+class SlackConnect4OAuth:
+    def on_get(self, req, resp):
+        code = req.params['code']
+        r = requests.post('https://slack.com/api/oauth.access',
+                          data={'code': code,
+                                'client_id': os.environ['SLACKBOT_CLIENT_ID'],
+                                'client_secret': os.environ['SLACKBOT_CLIENT_SECRET'],
+                                })
+        oauth_resp = r.json()
+        try:
+            # Save to s3
+            s3 = boto3.client('s3', endpoint_url=os.getenv('S3_ENDPOINT', None))
+            s3.put_object(Body=json.dumps(oauth_resp).encode('utf-8'),
+                          Bucket=os.environ['OAUTH_BUCKET'],
+                          Key=f"{oauth_resp['team_id']}.json",
+                          ContentType='application/json')
+            # Save to redis cache
+            r_connect4.set(oauth_resp['team_id'], oauth_resp['access_token'])
+
+            # TODO: Create better landing page
+            resp.body = json.dumps({'message': 'Connect4 successfully installed'})
+        except Exception:
+            resp.body = json.dumps(oauth_resp)
+        resp.status = falcon.HTTP_200
 
 
 class SlackConnect4:
@@ -106,7 +133,9 @@ class SlackConnect4Button:
             if game_state is not None:
                 # Game is over
                 # Generate recap in thread to post when ready
-                t = threading.Thread(target=generate_recap, args=(current_game, action_details))
+                t = threading.Thread(target=generate_recap,
+                                     args=(current_game,
+                                           action_details))
                 t.daemon = True
                 t.start()
 
@@ -147,14 +176,28 @@ class Healthcheck:
         resp.media = {'success': True}
 
 
+def get_access_token(team_id):
+    try:
+        access_token = r_connect4.get(team_id).decode('utf-8')
+    except AttributeError:
+        # Load in from s3 and save into redis cache
+        s3 = boto3.client('s3', endpoint_url=os.getenv('S3_ENDPOINT', None))
+        file_content = s3.get_object(Bucket=os.environ['OAUTH_BUCKET'],
+                                     Key=f"{team_id}.json")['Body'].read().decode('utf-8')
+        access_token = json.loads(file_content)['access_token']
+        r_connect4.set(team_id, access_token)
+
+    return access_token
+
+
 def generate_recap(game, action_details):
     recap_url = game.game_over()
+    team_access_token = get_access_token(action_details['team']['id'])
     r = requests.post(
         'https://slack.com/api/chat.postMessage',
         headers={
             'Content-Type': 'application/json',
-            'Authorization': f"Bearer {os.environ['SLACKBOT_TOKEN']}",
-
+            'Authorization': f"Bearer {team_access_token}",
         },
         json={
             'text': 'Game Recap',
@@ -171,6 +214,7 @@ def generate_recap(game, action_details):
 api = falcon.API()
 api.add_route('/healthcheck', Healthcheck())
 api.add_route('/slack/connect4', SlackConnect4())
+api.add_route('/slack/oauth', SlackConnect4OAuth())
 api.add_route('/slack/connect4/button', SlackConnect4Button())
 asset_path = os.path.join(os.path.dirname(os.path.abspath(__file__)), 'assets')
 api.add_static_route('/slack/connect4/assets', asset_path)

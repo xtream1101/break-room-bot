@@ -1,4 +1,5 @@
 import os
+import copy
 import time
 import json
 import uuid
@@ -50,15 +51,6 @@ class Connect4:
     def start(self, player1_name, player2_name):
         banner_url = self.render_player_banner(player1_name, player2_name)
         board_url = self.render_board()
-        self.game_history['moves'].append(
-            {
-                'player': 0,
-                'latest_move': (None, None),
-                'board': self.board,
-                'rendered_board_url': board_url,
-                'timestamp': utils.get_ts(),
-            }
-        )
         return banner_url, board_url
 
     def render_board_str(self):
@@ -118,7 +110,7 @@ class Connect4:
             {
                 'player': self.pieces[self.current_player],
                 'piece_played': self.latest_move,
-                'board': self.board,
+                'board': copy.deepcopy(self.board),
                 'rendered_board_url': board_url,
                 'timestamp': utils.get_ts(),
             }

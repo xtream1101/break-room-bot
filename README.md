@@ -1,5 +1,10 @@
 # Connect 4 slack bot
 
+## Adding Connect4 to your team
+[![Add to Slack](https://platform.slack-edge.com/img/add_to_slack.png)](https://slack.com/oauth/authorize?scope=commands,chat:write:bot&client_id=5199961139.818403121988)
+
+
+# Running on your own server
 
 ## Server
 Run server for slacks webhook `gunicorn server:api -w 2 --reload`
@@ -8,12 +13,14 @@ Run server for slacks webhook `gunicorn server:api -w 2 --reload`
 - `REDIS_HOST`
 - `REDIS_PASSWORD`
 - `BASE_URL`
-- `RENDERED_IMAGES_BUCKET`
-- `GAME_HISTORY_BUCKET`
+- `RENDERED_IMAGES_BUCKET` - Needs to be public
+- `GAME_HISTORY_BUCKET` - Needs to be public
 - `AWS_ACCESS_KEY_ID`
 - `AWS_SECRET_ACCESS_KEY`
-- `SLACKBOT_TOKEN`
 - `S3_ENDPOINT` - optional, will default to aws s3
+- `OAUTH_BUCKET` - only needed if oauth is being used. Needs to be private
+- `SLACKBOT_CLIENT_SECRET` - only needed if oauth is being used
+- `SLACKBOT_CLIENT_ID` - only needed if oauth is being used
 
 
 ### Slack bot settings
