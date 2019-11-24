@@ -49,9 +49,9 @@ The theme files that created the assets can be stored in the directory `raw_asse
 #### Board
 _Required_  
 Filename: `board.png`  
-Width: `438px`  
-Height: `377px` (actual board size), can be taller if some type of header is wanted, but the board must start in the bottom left.  
-From the bottom left, the pieces are 11px to the right and 11px from the bottom. This repeats until you get a 7 wide and 6 heigh board (creating the above dimensions).
+Width: `430px`  
+Height: `370px` (actual board size), can be taller if some type of header is wanted, but the board must start in the bottom left.  
+From the bottom left, the pieces are 10px to the right and 10px from the bottom. This repeats until you get a 7 wide and 6 heigh board (creating the above dimensions).
 
 #### Pieces
 _Required_  

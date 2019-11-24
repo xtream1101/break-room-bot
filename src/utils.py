@@ -10,7 +10,7 @@ from PIL import ImageDraw
 
 
 PIECE_D = 50
-PIECE_SPACE = 11
+PIECE_SPACE = 10
 
 
 def get_ts():
