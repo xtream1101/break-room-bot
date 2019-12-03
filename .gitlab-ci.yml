@@ -1,0 +1,17 @@
+image: node:13.2
+
+stages:
+  - deploy
+
+caprover:
+  stage: deploy
+  only:
+    - stagging
+  script:
+    - npm install -g caprover
+    - git checkout $CI_COMMIT_REF_NAME; git pull
+    - export CAPROVER_URL=$(eval echo \$$(echo CAPROVER_URL_$CI_COMMIT_REF_NAME))
+    - export CAPROVER_PASSWORD=$(eval echo \$$(echo CAPROVER_PASSWORD_$CI_COMMIT_REF_NAME))
+    - export CAPROVER_NAME=$CI_COMMIT_REF_NAME
+    - export CAPROVER_APP=$(eval echo \$$(echo CAPROVER_APP_$CI_COMMIT_REF_NAME))
+    - caprover deploy -b $CI_COMMIT_REF_NAME -a $CAPROVER_APP

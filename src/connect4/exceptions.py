@@ -1,5 +1,3 @@
-
-
 class ColumnFull(Warning):
     pass
 
