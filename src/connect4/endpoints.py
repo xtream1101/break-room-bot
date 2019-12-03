@@ -50,7 +50,7 @@ default_message_blocks = [
     {"type": "section", "text": {"type": "mrkdwn", "text": ""}},
     {"type": "context", "elements": [
         {"type": "mrkdwn", "text": ("Created by Eddy Hintze.\n"
-                                    "Game code can be found here https://github.com/xtream1101/connect4-slack")}
+                                    "Game code can be found here https://github.com/xtream1101/break-room-bot")}
     ]}
 ]
 

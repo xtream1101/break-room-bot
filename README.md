@@ -4,7 +4,7 @@ Take a break and play some games inside of slack
 
 ## Adding Break Bot to your
 ### Slack
-[![Add to Slack](https://platform.slack-edge.com/img/add_to_slack.png)](https://slack.com/oauth/authorize?scope=commands,chat:write:bot&client_id=5199961139.818403121988)
+[![Add to Slack](https://platform.slack-edge.com/img/add_to_slack.png)](https://slack.com/oauth/authorize?client_id=5199961139.860911396486&scope=commands,chat:write:bot)
 
 
 
