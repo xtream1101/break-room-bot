@@ -10,6 +10,8 @@ caprover:
     - master
   script:
     - npm install -g caprover
+    - git config user.email "gitlab.ci@gitx.codes"
+    - git config user.name "Gitx.codes Gitlab CI"
     # Need to do this otherwise caprover does not deploy the correct code
     - git checkout $CI_COMMIT_REF_NAME; git pull
     - export CAPROVER_URL=$(eval echo \$$(echo CAPROVER_URL_$CI_COMMIT_REF_NAME))
