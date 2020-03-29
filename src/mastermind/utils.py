@@ -2,12 +2,23 @@ import os
 import boto3
 import random
 import os.path
+import datetime
 import tempfile
 from PIL import Image
 from PIL import ImageFont
 from PIL import ImageDraw
 
 import mastermind.exceptions
+
+
+def get_ts():
+    return datetime.datetime.utcnow().isoformat() + 'Z'
+
+
+def get_theme_list():
+    # TODO: place holder until we implement themes
+    return ['classic']
+    # return list(os.walk('mastermind/assets'))[0][1]
 
 
 def gen_new_board(holes=4, colors=6, guesses=10):
@@ -144,8 +155,3 @@ def save_render(board_img, board_name, ext='png'):
                        ExtraArgs={'ContentType': content_type[ext]})
 
     return f"{os.getenv('S3_ENDPOINT', 'https://s3.amazonaws.com')}/{os.environ['RENDERED_IMAGES_BUCKET']}/{file_key}"
-
-
-def get_theme_list():
-    # TODO: place holder until we implement themes
-    return ['classic']

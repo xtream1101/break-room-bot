@@ -1,3 +1,5 @@
+import os
+import boto3
 import pickle
 import logging
 import requests
@@ -131,9 +133,16 @@ def slack_mastermind_move(action_details):
         del blocks[1]['image_bytes']
         del blocks[1]['fallback']
     else:
+        # Delete previous game board
+        prev_board_url = blocks[1]['image_url']
+        s3 = boto3.client('s3', endpoint_url=os.getenv('S3_ENDPOINT', None))
+        s3.delete_object(
+            Bucket=os.environ['RENDERED_IMAGES_BUCKET'],
+            Key=f"{current_game.s3_root_folder}/{prev_board_url.split('/')[-1]}"
+        )
         # Better to create a new block because the one returned has data that breaks the api if returned
         new_image = default_message_blocks[1].copy()
-        new_image["image_url"] = board_url
+        new_image['image_url'] = board_url
         blocks[1] = new_image
 
     # TODO: Have these game state messages post the key as an image
