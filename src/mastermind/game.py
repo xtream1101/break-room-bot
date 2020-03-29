@@ -18,7 +18,7 @@ class Mastermind:
         self.game_id = str(uuid.uuid4())
         self.num_holes = 4
         self.num_colors = 6
-        self.num_guesses = 6
+        self.num_guesses = 10
 
         self.s3_root_folder = f"mastermind/slack/{self.team_id}"
 
