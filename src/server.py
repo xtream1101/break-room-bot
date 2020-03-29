@@ -9,6 +9,12 @@ from connect4.endpoints import (
     connect4_help
 )
 
+from mastermind.endpoints import (
+    SlackMastermind,
+    slack_mastermind_move,
+    mastermind_help
+)
+
 
 class SlackInteractive:
     def on_post(self, req, resp):
@@ -16,6 +22,8 @@ class SlackInteractive:
         action_details = json.loads(data.replace('payload=', ''))
         if action_details['actions'][0]['action_id'].startswith('connect4-move'):
             slack_connect4_move(action_details)
+        elif action_details['actions'][0]['action_id'].startswith('mastermind-move'):
+            slack_mastermind_move(action_details)
 
 
 class BreakRoom:
@@ -29,8 +37,8 @@ class BreakRoom:
 {connect4_help}
 
 *Mastermind*
-_comming soon_
-            """,
+{mastermind_help}
+""",
         }
 
 
@@ -46,3 +54,4 @@ api.add_route('/slack/breakroom', BreakRoom())
 api.add_route('/slack/oauth', SlackOAuth())
 api.add_route('/slack/interactive', SlackInteractive())
 api.add_route('/slack/connect4', SlackConnect4())
+api.add_route('/slack/mastermind', SlackMastermind())
