@@ -16,13 +16,18 @@ import connect4.utils as connect4_utils
 logger = logging.getLogger()
 
 
-connect4_help = '''*Usage:*
-To list Themes:
-\t `/connect4 themes`
-Start a game:
-\t`/connect4 @user ThemeName`
-\t\t`@user` is who to play with
-\t\t`ThemeName` is for a custom theme, if not passed in "Classic" will be used
+connect4_help = '''*_Usage_*
+> This help message
+> \t `/connect4 help`
+> To list Themes:
+> \t `/connect4 themes`
+> Start a game:
+> \t`/connect4 @user ThemeName`
+> \t\t`@user` is who to play with
+> \t\t`ThemeName` is for a custom theme, if not passed in "Classic" will be used
+
+*_Rules_*
+> Try and get 4 of your color in a row
 '''
 
 default_message_blocks = [

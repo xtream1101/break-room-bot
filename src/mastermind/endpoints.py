@@ -13,12 +13,19 @@ import mastermind.utils as mastermind_utils
 logger = logging.getLogger()
 
 
-mastermind_help = '''*Usage:*
-To list Themes:
-\t `/mastermind themes`
-Start a game:
-\t`/mastermind [ThemeName]`
-\t\t`ThemeName` is for a custom theme, if not passed in "Classic" will be used
+mastermind_help = '''*_Usage_*
+> This help message
+> \t `/mastermind help`
+> To list Themes:
+> \t `/mastermind themes`
+> Start a game:
+> \t`/mastermind ThemeName`
+> \t\t`ThemeName` is for a custom theme, if not passed in "Classic" will be used
+
+*_Rules_*
+> Try and guess the code. Once you pick your 4 colors press submit and feedback will appear on the left.
+> *Black* peg means that a peg is the correct color and position
+> *White* peg means that a peg is the correct color, but wrong position
 '''
 
 default_message_blocks = [
@@ -89,16 +96,30 @@ class SlackMastermind:
 
             # Add undo button
             default_message_blocks[2]['elements'].append(
-                {"type": "button", "action_id": f"mastermind-move-undo", "text": {"type": "plain_text", "text": "Undo"}, "value": "-1"}  # noqa: E501
+                {"type": "button",
+                 "action_id": f"mastermind-move-undo",
+                 "text": {"type": "plain_text", "text": "Undo"},
+                 "value": "-1",
+                 }
             )
             # Add color buttons
-            for idx in range(current_game.num_colors):
-                default_message_blocks[2]['elements'].append(
-                    {"type": "button", "action_id": f"mastermind-move-{idx}", "text": {"type": "plain_text", "text": f"{idx}"}, "value": f"{idx}"}  # noqa: E501
-                )
+            with open(f'mastermind/assets/{theme}/colors.csv', 'r') as f:
+                for color in f.readlines():
+                    i, name = color.split(',')
+                    default_message_blocks[2]['elements'].append(
+                        {"type": "button",
+                         "action_id": f"mastermind-move-{i}",
+                         "text": {"type": "plain_text", "text": f"{name}"},
+                         "value": f"{i}",
+                         }
+                    )
             # Add submit button
             default_message_blocks[2]['elements'].append(
-                {"type": "button", "action_id": f"mastermind-move-submit", "text": {"type": "plain_text", "text": "Submit"}, "value": "-2"}  # noqa: E501
+                {"type": "button",
+                 "action_id": f"mastermind-move-submit",
+                 "text": {"type": "plain_text", "text": "Submit"},
+                 "value": "-2",
+                 }
             )
 
         except Exception:
@@ -157,7 +178,7 @@ def slack_mastermind_move(action_details):
         game_key = ', '.join(str(x) for x in current_game.board['private'])
         game_states = {
             0: f":disappointed: *You failed to guess the code of {game_key}!* :skull_and_crossbones:",
-            1: f":tada: *You Wwn!!* :confetti_ball:"
+            1: f":tada: *You won!!* :confetti_ball:"
         }
         # Remove buttons
         blocks.pop(2)

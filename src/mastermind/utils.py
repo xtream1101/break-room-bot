@@ -178,10 +178,25 @@ def render_board(board, theme='classic'):
     empty_row_img.paste(hole_img, (hole_width * 4, 0), hole_img)
 
     # Create full empty game board
+    row_sep_img = Image.open(f"mastermind/assets/{theme}/row_sep.png")
+    sep_height = row_sep_img.size[1]
     row_width, row_height = empty_row_img.size
-    empty_board_img = Image.new("RGBA", (row_width, row_height * len(board['public'])), (255, 255, 255))
+    board_height = (row_height * len(board['public'])) + (sep_height * (len(board['public']) - 1))
+    empty_board_img = Image.new("RGBA", (row_width, board_height), (255, 255, 255))
     for i in range(0, len(board['public'])):
-        empty_board_img.paste(empty_row_img, (0, row_height * i), empty_row_img)
+        paste_y = (row_height * i) + (sep_height * i)
+        if i != 0:
+            # Do not do on the last one
+            for j in range(0, len(board['public'][0][0]) + 1):
+                empty_board_img.paste(
+                    row_sep_img,
+                    (hole_width * j, paste_y - 2)
+                )
+        empty_board_img.paste(
+            empty_row_img,
+            (0, paste_y),
+            empty_row_img
+        )
 
     feedback_img = {
         'w': Image.open(f"mastermind/assets/{theme}/peg-w.png").resize((small_hole_width, small_hole_height), Image.ANTIALIAS),  # noqa: E501
@@ -204,7 +219,7 @@ def render_board(board, theme='classic'):
     # Add pegs to board, row by row
     for row_idx, row in enumerate(board['public'][::-1]):
         # Add feedback
-        row_y = row_height * row_idx
+        row_y = (row_height * row_idx) + (sep_height * row_idx)
         for fb_idx, fb in enumerate(row[1][0]):
             if fb is not None:
                 empty_board_img.paste(
