@@ -1,3 +1,4 @@
+import os
 import random
 from PIL import Image
 from PIL import ImageFont
@@ -7,9 +8,7 @@ import mastermind.exceptions
 
 
 def get_theme_list():
-    # TODO: place holder until we implement themes
-    return ['classic']
-    # return list(os.walk('mastermind/assets'))[0][1]
+    return list(os.walk('mastermind/assets'))[0][1]
 
 
 def gen_new_board(holes=4, colors=6, guesses=10):
@@ -106,6 +105,30 @@ def _find_guess_index(board):
             return idx
 
 
+def get_sample_theme_blocks():
+    samples = []
+    for theme in get_theme_list():
+        try:
+            with open(os.path.join('mastermind', 'assets', theme, 'about.txt'), 'r') as f:
+                theme_about_text = f.read().strip()
+        except FileNotFoundError:
+            theme_about_text = ''
+
+        samples.append({
+            "type": "section",
+            "text": {
+                "type": "mrkdwn",
+                "text": f"Theme: *{theme}*\n{theme_about_text[:200]}"
+            },
+            "accessory": {
+                "type": "image",
+                "image_url": f"{os.getenv('S3_ENDPOINT', 'https://s3.amazonaws.com')}/{os.environ['RENDERED_IMAGES_BUCKET']}/mastermind/themes/sample-{theme}.png",  # noqa:E501
+                "alt_text": theme
+            }
+        })
+    return samples
+
+
 def render_board_str(board, theme='classic'):
     image = Image.new("RGBA", (600, 400), (255, 255, 255))
     draw = ImageDraw.Draw(image)
@@ -127,3 +150,76 @@ Game Board
     draw.text((10, 0), board_str, (0, 0, 0), font=font)
 
     return image
+
+
+def render_board(board, theme='classic'):
+    # TODO: Make dynamic. Currently only works with 4 holes, 6 colors, and 10 guesses
+    # TODO: Make more efficient. Currently has to re render the full board each time
+    #       (use last board and just add/remove whats needed?)
+    hole_img = Image.open(f"mastermind/assets/{theme}/hole.png")
+    hole_width, hole_height = hole_img.size
+
+    # Create a 2 x 2 key image
+    empty_feedback_img = Image.new("RGBA", (hole_width, hole_height), (255, 255, 255))
+    small_hole_width = int(hole_width / 2)
+    small_hole_height = int(hole_height / 2)
+    small_hole_img = hole_img.resize((small_hole_width, small_hole_height), Image.ANTIALIAS)
+    empty_feedback_img.paste(small_hole_img, (0, 0), small_hole_img)
+    empty_feedback_img.paste(small_hole_img, (0, small_hole_height), small_hole_img)
+    empty_feedback_img.paste(small_hole_img, (small_hole_width, 0), small_hole_img)
+    empty_feedback_img.paste(small_hole_img, (small_hole_width, small_hole_height), small_hole_img)
+
+    # Create row with 1 key and 4 holes
+    empty_row_img = Image.new("RGBA", (hole_width * 5, hole_height), (255, 255, 255))
+    empty_row_img.paste(empty_feedback_img, (0, 0), empty_feedback_img)
+    empty_row_img.paste(hole_img, (hole_width * 1, 0), hole_img)
+    empty_row_img.paste(hole_img, (hole_width * 2, 0), hole_img)
+    empty_row_img.paste(hole_img, (hole_width * 3, 0), hole_img)
+    empty_row_img.paste(hole_img, (hole_width * 4, 0), hole_img)
+
+    # Create full empty game board
+    row_width, row_height = empty_row_img.size
+    empty_board_img = Image.new("RGBA", (row_width, row_height * len(board['public'])), (255, 255, 255))
+    for i in range(0, len(board['public'])):
+        empty_board_img.paste(empty_row_img, (0, row_height * i), empty_row_img)
+
+    feedback_img = {
+        'w': Image.open(f"mastermind/assets/{theme}/peg-w.png").resize((small_hole_width, small_hole_height), Image.ANTIALIAS),  # noqa: E501
+        'b': Image.open(f"mastermind/assets/{theme}/peg-b.png").resize((small_hole_width, small_hole_height), Image.ANTIALIAS),  # noqa: E501
+    }
+    peg_img = {
+        0: Image.open(f"mastermind/assets/{theme}/peg-0.png"),
+        1: Image.open(f"mastermind/assets/{theme}/peg-1.png"),
+        2: Image.open(f"mastermind/assets/{theme}/peg-2.png"),
+        3: Image.open(f"mastermind/assets/{theme}/peg-3.png"),
+        4: Image.open(f"mastermind/assets/{theme}/peg-4.png"),
+        5: Image.open(f"mastermind/assets/{theme}/peg-5.png"),
+    }
+    fb_rel_location = [
+        (0, 0),
+        (0, small_hole_height),
+        (small_hole_width, 0),
+        (small_hole_width, small_hole_height),
+    ]
+    # Add pegs to board, row by row
+    for row_idx, row in enumerate(board['public'][::-1]):
+        # Add feedback
+        row_y = row_height * row_idx
+        for fb_idx, fb in enumerate(row[1][0]):
+            if fb is not None:
+                empty_board_img.paste(
+                    feedback_img[fb],
+                    (fb_rel_location[fb_idx][0], fb_rel_location[fb_idx][1] + row_y),
+                    feedback_img[fb]
+                )
+
+        # Add players guess
+        for peg_idx, peg in enumerate(row[0], start=1):
+            if peg is not None:
+                empty_board_img.paste(
+                    peg_img[peg],
+                    (peg_idx * hole_width, row_y),
+                    peg_img[peg]
+                )
+
+    return empty_board_img

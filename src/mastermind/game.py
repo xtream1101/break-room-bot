@@ -48,7 +48,7 @@ class Mastermind:
 
     def render_board(self):
         board_name = f"{self.s3_root_folder}/{self.game_id}_{time.time()}"
-        board_img = mastermind_utils.render_board_str(self.board, theme=self.theme)
+        board_img = mastermind_utils.render_board(self.board, theme=self.theme)
         return core_utils.save_render(board_img, board_name)
 
     def parse_move(self, action):

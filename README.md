@@ -2,6 +2,12 @@
 Take a break and play some games inside of slack  
 
 
+## Has 2 game currently
+- **Connect 4**
+- **Mastermind**
+
+use the slash command `/breakroom` to find out more!  
+
 ## Adding Break Bot to your
 ### Slack
 [![Add to Slack](https://platform.slack-edge.com/img/add_to_slack.png)](https://slack.com/oauth/authorize?client_id=5199961139.860911396486&scope=commands,chat:write:bot)
@@ -45,6 +51,9 @@ Needs:
 - `/connect4`  
     Set the Request url to be `https://YOUR_DOMAIN/slack/connect4`.  
     Enable the checkbox for _Escape channels, users, and links sent to your app_  
+
+- `/mastermind`  
+    Set the Request url to be `https://YOUR_DOMAIN/slack/mastermind`.   
 
 
 #### Interactive Components

@@ -51,6 +51,14 @@ class SlackMastermind:
                 }
                 return
 
+            # Display current themes to just the user
+            if 'text' in data and data['text'][0].strip().lower() == 'themes':
+                resp.media = {
+                    'replace_original': True,
+                    'blocks': mastermind_utils.get_sample_theme_blocks(),
+                }
+                return
+
             # TODO: make a call to slack to get the display names, not the actual user names
             player_id, player_name = data['user_id'][0], data['user_name'][0]
             theme = 'classic'
@@ -116,6 +124,9 @@ def slack_mastermind_move(action_details):
     current_game = pickle.loads(redis_client.get(game_id))
     color = current_game.parse_move(action_details)
 
+    # Set message back to default
+    blocks[-2]['text']['text'] = default_message_blocks[-2]['text']['text']
+
     game_state = None
     try:
         board_url, game_state = current_game.make_move(color)
@@ -141,8 +152,6 @@ def slack_mastermind_move(action_details):
         new_image['image_url'] = board_url
         blocks[1] = new_image
 
-    # Set message back to default
-    blocks[-2] = default_message_blocks[-2].copy()
     # TODO: Have these game state messages post the key as an image
     if game_state is not None:
         game_key = ', '.join(str(x) for x in current_game.board['private'])
