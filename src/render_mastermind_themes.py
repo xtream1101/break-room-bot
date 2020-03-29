@@ -9,6 +9,8 @@ sample_board = {
         [[3, 1, 4, 5], [['w', 'w', None, None], 1]],
         [[1, 4, 0, 2], [['b', 'w', 'w', None], 1]],
         [[1, 3, None, None], [[None, None, None, None], 0]],
+        [[None, None, None, None], [[None, None, None, None], 0]],
+        [[None, None, None, None], [[None, None, None, None], 0]],
     ]
 }
 
