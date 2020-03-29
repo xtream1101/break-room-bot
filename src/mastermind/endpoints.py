@@ -31,6 +31,7 @@ default_message_blocks = [
         "type": "actions",
         "elements": []  # Will fill with buttons based on the number of colors you are playing with
     },
+    {"type": "section", "text": {"type": "mrkdwn", "text": "Guess the code..."}},
     {"type": "context", "elements": [
         {"type": "mrkdwn", "text": ("Created by Eddy Hintze.\n"
                                     "Game code can be found here https://github.com/xtream1101/break-room-bot")}
@@ -115,18 +116,13 @@ def slack_mastermind_move(action_details):
     current_game = pickle.loads(redis_client.get(game_id))
     color = current_game.parse_move(action_details)
 
-    # Clear any warning messages from previous turns
-    blocks[-1]['elements'] = [blocks[-1]['elements'][-1]]
     game_state = None
     try:
         board_url, game_state = current_game.make_move(color)
     except (mastermind.exceptions.MustSubmitGuess,
             mastermind.exceptions.NothingToUndo,
             mastermind.exceptions.MustCompleteCode) as e:
-        blocks[-1]['elements'].insert(
-            0,
-            {"type": "mrkdwn", "text": f":red_circle: *{e}* :red_circle:"}
-        )
+        blocks[-2]['text']['text'] = f":red_circle: *{e}* :red_circle:"
         # Clean up image fields auto added by slack that cannot be posted when updating the message
         del blocks[1]['image_width']
         del blocks[1]['image_height']
@@ -145,26 +141,25 @@ def slack_mastermind_move(action_details):
         new_image['image_url'] = board_url
         blocks[1] = new_image
 
+    # Set message back to default
+    blocks[-2] = default_message_blocks[-2].copy()
     # TODO: Have these game state messages post the key as an image
     if game_state is not None:
         game_key = ', '.join(str(x) for x in current_game.board['private'])
         game_states = {
             0: f":disappointed: *You failed to guess the code of {game_key}!* :skull_and_crossbones:",
-            1: f":tada: *You WON!!* :confetti_ball:"
+            1: f":tada: *You Wwn!!* :confetti_ball:"
         }
         # Remove buttons
         blocks.pop(2)
         # Display end game message
-        blocks[-1]['elements'].insert(
-            0,
-            {"type": "mrkdwn", "text": game_states[game_state]}
-        )
+        blocks[-2]['text']['text'] = game_states[game_state]
 
     # Fix formating of some messages
     blocks[0]['text']['text'] = blocks[0]['text']['text'].replace('+', ' ')
     blocks[1]['title']['text'] = blocks[1]['title']['text'].replace('+', ' ')
-    for element in blocks[-1]['elements']:
-        element['text'] = element['text'].replace('+', ' ')
+    blocks[-2]['text']['text'] = blocks[-2]['text']['text'].replace('+', ' ')
+    blocks[-1]['elements'][0]['text'] = blocks[-1]['elements'][0]['text'].replace('+', ' ')
 
     r = requests.post(action_details['response_url'], json=action_details['message'])
     if r.json().get('ok') is True:
