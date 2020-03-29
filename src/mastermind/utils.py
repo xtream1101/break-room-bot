@@ -1,4 +1,3 @@
-import os
 import random
 from PIL import Image
 from PIL import ImageFont

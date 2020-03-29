@@ -3,7 +3,6 @@ import io
 import json
 import boto3
 import os.path
-import datetime
 import tempfile
 import requests
 from PIL import Image
