@@ -3,6 +3,7 @@ import uuid
 import time
 import json
 import boto3
+import utils as core_utils
 import mastermind.utils as mastermind_utils
 
 
@@ -30,7 +31,7 @@ class Mastermind:
         self.game_history = {
             'platform': 'slack',
             'game_id': self.game_id,
-            'start_time': mastermind_utils.get_ts(),
+            'start_time': core_utils.get_ts(),
             'end_time': None,
             'theme': theme,
             'player_id': self.player_id,
@@ -48,7 +49,7 @@ class Mastermind:
     def render_board(self):
         board_name = f"{self.s3_root_folder}/{self.game_id}_{time.time()}"
         board_img = mastermind_utils.render_board_str(self.board, theme=self.theme)
-        return mastermind_utils.save_render(board_img, board_name)
+        return core_utils.save_render(board_img, board_name)
 
     def parse_move(self, action):
         return int(action['actions'][0]['value'])
@@ -59,7 +60,7 @@ class Mastermind:
             # Game over
             self.game_history['board'] = self.board
             self.game_history['game_state'] = game_state
-            self.game_history['end_time'] = mastermind_utils.get_ts()
+            self.game_history['end_time'] = core_utils.get_ts()
             s3 = boto3.client('s3', endpoint_url=os.getenv('S3_ENDPOINT', None))
             s3.put_object(
                 Body=json.dumps(self.game_history).encode('utf-8'),

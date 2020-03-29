@@ -18,10 +18,6 @@ PIECE_D = 50
 PIECE_SPACE = 10
 
 
-def get_ts():
-    return datetime.datetime.utcnow().isoformat() + 'Z'
-
-
 def get_theme_list():
     return list(os.walk('connect4/assets'))[0][1]
 
@@ -338,22 +334,3 @@ def render_board(board, theme='classic'):
                 board_img.paste(player_piece, (piece_x, piece_y), player_piece)
 
     return board_img
-
-
-def save_render(board_img, board_name, ext='png'):
-    # TODO: Auto get content type using lib
-    content_type = {
-        'png': 'image/png',
-        'gif': 'image/gif',
-    }
-    file_key = f"{board_name}.{ext}"
-    s3 = boto3.client('s3', endpoint_url=os.getenv('S3_ENDPOINT', None))
-    with tempfile.NamedTemporaryFile() as tmp:
-        # TODO: Need to make this dynamic in order to support multiple formats
-        board_img.save(tmp.name, format=ext)
-        s3.upload_file(tmp.name,
-                       os.environ['RENDERED_IMAGES_BUCKET'],
-                       file_key,
-                       ExtraArgs={'ContentType': content_type[ext]})
-
-    return f"{os.getenv('S3_ENDPOINT', 'https://s3.amazonaws.com')}/{os.environ['RENDERED_IMAGES_BUCKET']}/{file_key}"

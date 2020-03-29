@@ -4,8 +4,8 @@ import time
 import json
 import uuid
 import boto3
-import datetime
 
+import utils as core_utils
 import connect4.exceptions
 import connect4.utils as connect4_utils
 
@@ -26,7 +26,7 @@ class Connect4:
         self.game_history = {
             'platform': 'slack',
             'game_id': self.game_id,
-            'start_time': connect4_utils.get_ts(),
+            'start_time': core_utils.get_ts(),
             'end_time': None,
             'theme': theme,
             'player1_id': self.player1_id,
@@ -65,7 +65,7 @@ class Connect4:
                 'piece_played': (None, None),
                 'board': copy.deepcopy(self.board),
                 'rendered_board_url': board_url,
-                'timestamp': connect4_utils.get_ts(),
+                'timestamp': core_utils.get_ts(),
             }
         )
         return banner_url, board_url
@@ -87,7 +87,7 @@ class Connect4:
             board_img = connect4_utils.add_lastest_move_overlay(board_img, self.latest_move, theme=self.theme)
         else:
             board_img = connect4_utils.add_won_overlay(board_img, self.winning_moves, theme=self.theme)
-        return connect4_utils.save_render(board_img, board_name)
+        return core_utils.save_render(board_img, board_name)
 
     def render_player_banner(self, player1_name, player2_name):
         name_prefix = f"{self.s3_root_folder}/{self.game_id}"
@@ -130,7 +130,7 @@ class Connect4:
                 'piece_played': self.latest_move,
                 'board': copy.deepcopy(self.board),
                 'rendered_board_url': board_url,
-                'timestamp': connect4_utils.get_ts(),
+                'timestamp': core_utils.get_ts(),
             }
         )
 
@@ -158,7 +158,7 @@ class Connect4:
         return recap_url
 
     def game_over(self):
-        self.game_history['end_time'] = datetime.datetime.utcnow().isoformat() + 'Z'
+        self.game_history['end_time'] = core_utils.get_ts()
 
         recap_url = self._generate_recap(self.game_history['moves'])
 
