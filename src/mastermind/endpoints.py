@@ -1,4 +1,5 @@
 import os
+import json
 import boto3
 import pickle
 import logging
@@ -130,6 +131,7 @@ class SlackMastermind:
                          'if this keeps happening please create an issue in github'),
             }
         else:
+            logger.warning(json.dumps(default_message_blocks))
             # Post the new game
             resp.media = {
                 # 'replace_original': True,  # Does this even  work when using in_channel?
@@ -143,6 +145,10 @@ def slack_mastermind_move(action_details):
 
     game_id = blocks[0]['block_id']
     current_game = pickle.loads(redis_client.get(game_id))
+
+    if action_details['user']['id'] != current_game.player_id:
+        return None
+
     color = current_game.parse_move(action_details)
 
     # Set message back to default
