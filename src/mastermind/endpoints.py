@@ -96,18 +96,18 @@ class SlackMastermind:
             default_message_blocks[0]['block_id'] = current_game.game_id
 
             # Add undo button
-            default_message_blocks[2]['elements'].append(
+            buttons = [
                 {"type": "button",
                  "action_id": f"mastermind-move-undo",
                  "text": {"type": "plain_text", "text": "Undo"},
                  "value": "-1",
                  }
-            )
+            ]
             # Add color buttons
             with open(f'mastermind/assets/{theme}/colors.csv', 'r') as f:
                 for color in f.readlines():
                     i, name = color.split(',')
-                    default_message_blocks[2]['elements'].append(
+                    buttons.append(
                         {"type": "button",
                          "action_id": f"mastermind-move-{i}",
                          "text": {"type": "plain_text", "text": f"{name}"},
@@ -115,13 +115,14 @@ class SlackMastermind:
                          }
                     )
             # Add submit button
-            default_message_blocks[2]['elements'].append(
+            buttons.append(
                 {"type": "button",
                  "action_id": f"mastermind-move-submit",
                  "text": {"type": "plain_text", "text": "Submit"},
                  "value": "-2",
                  }
             )
+            default_message_blocks[2]['elements'] = buttons
 
         except Exception:
             logger.exception("Failed to start Mastermind game")
